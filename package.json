@@ -1,0 +1,11 @@
+{
+  "name": "interview-prep",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Interview answers notebook for JavaScript, React, and React Native",
+  "scripts": {
+    "start": "npx --yes serve . -l 3000",
+    "dev": "npx --yes serve . -l 3000"
+  }
+}
