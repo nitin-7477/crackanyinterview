@@ -339,12 +339,13 @@ function renderPlanSidebar() {
   }
 
   const byId = new Map(questions.map((item) => [item.id, item]));
-  const reached = quiz?.marks?.length || 0;
+  const reached = quiz ? answeredCount(quiz) : 0;
   const questionList = quiz
     ? quiz.items
         .map((item, index) => {
           const title = item.q || byId.get(item.id)?.q || "Practice question";
-          const status = index < reached ? (quiz.marks[index] ? "Correct" : "Wrong") : "Open";
+          const picked = quiz.picks?.[index];
+          const status = Number.isInteger(picked) ? (quiz.marks[index] ? "Correct" : "Wrong") : "Not answered";
           return `
       <button type="button" class="side-item ${index === quiz.index ? "is-active" : ""}" data-quiz-index="${index}">
         <span class="side-ico" aria-hidden="true">${topicIcon(index)}</span>
@@ -418,7 +419,7 @@ function renderPlanLesson() {
     "Read the 20 questions carefully. Practice is required, and the next day opens only after you score more than 30 out of 40.";
   els.lessonTitle.textContent = `Day ${day}`;
   els.lessonLede.textContent = quiz
-    ? `Question ${quiz.index + 1} of ${QUIZ_SIZE}. Choose the correct answer.`
+    ? `Answer all ${QUIZ_SIZE} questions. Day ${day + 1} opens only after you score more than ${PASS_SCORE}.`
     : `Read these ${today.length} questions. The practice quiz unlocks after every one is marked as read.`;
   els.heroMeta.innerHTML = `
     <span>${today.length} to read</span>
@@ -429,9 +430,9 @@ function renderPlanLesson() {
 
   if (quiz) {
     const byId = new Map(questions.map((item) => [item.id, item]));
-    els.quizList.innerHTML = quiz.items
-      .map((prompt, index) => renderQuizReview(prompt, index, byId.get(prompt.id)))
-      .join("");
+    els.quizList.innerHTML = `${renderQuizProgress(quiz)}${quiz.items
+      .map((prompt, index) => renderQuizReview(prompt, index, byId.get(prompt.id), quiz))
+      .join("")}`;
     return;
   }
 
@@ -489,82 +490,69 @@ function renderPlanLesson() {
   els.quizList.innerHTML = `${status}${cards}${start}`;
 }
 
-function renderQuizReview(prompt, index, item) {
+function answeredCount(quiz) {
+  return quiz.items.filter((_, index) => Number.isInteger(quiz.picks?.[index])).length;
+}
+
+function renderQuizProgress(quiz) {
+  const answered = answeredCount(quiz);
+  const done = answered === quiz.items.length;
+  if (!done) {
+    return `<p class="plan-note">${answered}/${quiz.items.length} answered. Choose an answer on every question. The next day stays locked until you finish and score more than ${PASS_SCORE}.</p>`;
+  }
+  const score = quiz.marks.filter(Boolean).length;
+  const passed = score > PASS_SCORE;
+  const nextStep =
+    quiz.day < PLAN_DAYS
+      ? `Day ${quiz.day + 1} is unlocked.`
+      : "This was the last day.";
+  return `<div class="plan-gate">
+    <p class="plan-note ${passed ? "is-pass" : "is-fail"}">You scored ${score}/${quiz.items.length}. ${
+      passed ? nextStep : `Score more than ${PASS_SCORE} to unlock the next day.`
+    }</p>
+    ${
+      passed
+        ? ""
+        : `<button type="button" class="btn btn-primary" data-start-quiz>Retake practice quiz</button>`
+    }
+  </div>`;
+}
+
+function renderQuizReview(prompt, index, item, quiz) {
   const letters = ["A", "B", "C", "D"];
   if (!prompt?.options?.length) {
     return `<p class="plan-note is-fail">Question ${index + 1} is missing.</p>`;
   }
+  const picked = quiz.picks?.[index];
+  const answered = Number.isInteger(picked);
   const choices = prompt.options
     .map((option, optionIndex) => {
-      const mark = optionIndex === prompt.correct ? " is-correct" : "";
-      return `
-        <button type="button" class="choice${mark}" disabled>
-          <span>${letters[optionIndex]}</span>
-          <span>${escapeHtml(option)}</span>
-        </button>`;
-    })
-    .join("");
-  return `
-    <article class="qa practice-card" id="quiz-q-${index}">
-      <div class="qa-q">
-        <span class="badge q">${index + 1}</span>
-        <div>
-          <strong>${escapeHtml(prompt.q || item?.q || "Practice question")}</strong>
-          <span class="qa-meta">Correct answer: ${letters[prompt.correct]}</span>
-        </div>
-      </div>
-      <div class="choices">${choices}</div>
-    </article>`;
-}
-
-function renderQuizCard(quiz, questions) {
-  const byId = new Map(questions.map((item) => [item.id, item]));
-  const prompt = quiz.items?.[quiz.index];
-  const item = prompt ? byId.get(prompt.id) : null;
-  if (!prompt?.options?.length) {
-    return `<p class="plan-note is-fail">This practice question is missing. Start the quiz again.</p>`;
-  }
-  const reviewing = quiz.index < (quiz.marks?.length || 0);
-  const chosen = reviewing ? quiz.picks?.[quiz.index] : quiz.selected;
-  const answered = reviewing || Number.isInteger(chosen);
-  const letters = ["A", "B", "C", "D"];
-  const choices = prompt.options
-    .map((option, index) => {
       let mark = "";
-      if (answered && index === prompt.correct) mark = " is-correct";
-      else if (answered && index === chosen) mark = " is-wrong";
+      if (answered && optionIndex === prompt.correct) mark = " is-correct";
+      else if (answered && optionIndex === picked) mark = " is-wrong";
       return `
-        <button type="button" class="choice${mark}" data-choice="${index}" ${answered ? "disabled" : ""}>
-          <span>${letters[index]}</span>
+        <button type="button" class="choice${mark}" data-quiz-q="${index}" data-choice="${optionIndex}" ${answered ? "disabled" : ""}>
+          <span>${letters[optionIndex]}</span>
           <span>${escapeHtml(option)}</span>
         </button>`;
     })
     .join("");
   const verdict = !answered
     ? ""
-    : chosen === prompt.correct
+    : picked === prompt.correct
       ? `<p class="plan-note is-pass">Correct.</p>`
       : `<p class="plan-note is-fail">Not quite. The correct answer is ${letters[prompt.correct]}.</p>`;
   return `
-    <article class="qa practice-card">
+    <article class="qa practice-card" id="quiz-q-${index}">
       <div class="qa-q">
-        <span class="badge q">${quiz.index + 1}</span>
+        <span class="badge q">${index + 1}</span>
         <div>
-          <strong>${escapeHtml(prompt.q || item?.q || "")}</strong>
-          <span class="qa-meta">Choose the correct answer · ${quiz.index + 1} of ${quiz.items.length}</span>
+          <strong>${escapeHtml(prompt.q || item?.q || "Practice question")}</strong>
+          <span class="qa-meta">${answered ? (picked === prompt.correct ? "Correct" : "Wrong") : "Choose an answer"}</span>
         </div>
       </div>
       <div class="choices">${choices}</div>
-      ${
-        answered
-          ? `<div class="plan-actions">
-              ${verdict}
-              <button type="button" class="btn btn-primary" data-next>
-                ${quiz.index + 1 === quiz.items.length ? "See score" : "Next question"}
-              </button>
-            </div>`
-          : ""
-      }
+      ${verdict ? `<div class="plan-actions">${verdict}</div>` : ""}
     </article>`;
 }
 
@@ -610,40 +598,29 @@ function handlePlanClick(event) {
     return true;
   }
 
-  const choice = event.target.closest("[data-choice]")?.dataset.choice;
-  if (choice != null && state.plan.activeQuiz && !Number.isInteger(state.plan.activeQuiz.selected)) {
-    state.plan.activeQuiz.selected = Number(choice);
-    savePlan();
-    render();
-    return true;
-  }
-
-  if (event.target.closest("[data-next]") && state.plan.activeQuiz) {
+  const choiceButton = event.target.closest("[data-choice]");
+  if (choiceButton && state.plan.activeQuiz) {
     const quiz = state.plan.activeQuiz;
+    const questionIndex = Number(choiceButton.dataset.quizQ);
+    const optionIndex = Number(choiceButton.dataset.choice);
+    const prompt = quiz.items?.[questionIndex];
+    if (!prompt || Number.isInteger(quiz.picks?.[questionIndex])) return true;
     quiz.picks = quiz.picks || [];
-    const reviewing = quiz.index < quiz.marks.length;
-    if (!reviewing) {
-      const prompt = quiz.items[quiz.index];
-      quiz.picks[quiz.index] = quiz.selected;
-      quiz.marks.push(quiz.selected === prompt.correct);
-    }
-    if (!reviewing && quiz.marks.length >= quiz.items.length) {
+    quiz.marks = quiz.marks || [];
+    quiz.picks[questionIndex] = optionIndex;
+    quiz.marks[questionIndex] = optionIndex === prompt.correct;
+    quiz.index = questionIndex;
+    if (answeredCount(quiz) === quiz.items.length) {
       const score = quiz.marks.filter(Boolean).length;
       const previous = state.plan.results[quiz.day];
-      const passed = score > PASS_SCORE || Boolean(previous?.passed);
       state.plan.results[quiz.day] = {
         score: Math.max(score, previous?.score || 0),
         total: quiz.items.length,
-        passed,
+        passed: score > PASS_SCORE || Boolean(previous?.passed),
       };
-      state.plan.activeQuiz = null;
-    } else {
-      quiz.index += 1;
-      quiz.selected = quiz.index < quiz.marks.length ? quiz.picks[quiz.index] ?? null : null;
     }
     savePlan();
     render();
-    window.scrollTo({ top: 0, behavior: "smooth" });
     return true;
   }
 
