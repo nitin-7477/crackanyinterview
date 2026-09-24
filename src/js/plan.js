@@ -4,6 +4,19 @@ export const READ_PER_DAY = 20;
 export const QUIZ_SIZE = 40;
 export const PASS_SCORE = 30;
 
+const ITERATOR_GENERATOR_IDS = [
+  "js-iterators",
+  "js-symbol-iterator",
+  "js-async-iterators",
+  "js-generators",
+  "js-generators-work",
+  "js-regular-vs-async-generators",
+  "js-iterator-vs-iterable",
+  "js-yield",
+  "js-generator-return",
+  "js-generator-vs-normal",
+];
+
 const DAY_ONE_IDS = [
   "js-what",
   "js-features",
@@ -31,7 +44,13 @@ export function orderForPlan(questions) {
   const byId = new Map(questions.map((item) => [item.id, item]));
   const first = DAY_ONE_IDS.map((id) => byId.get(id)).filter(Boolean);
   const used = new Set(first.map((item) => item.id));
-  return [...first, ...questions.filter((item) => !used.has(item.id))];
+  const deferred = ITERATOR_GENERATOR_IDS.map((id) => byId.get(id)).filter(
+    (item) => item && !used.has(item.id)
+  );
+  const deferredIds = new Set(deferred.map((item) => item.id));
+  const rest = questions.filter((item) => !used.has(item.id) && !deferredIds.has(item.id));
+  const insertAt = Math.min((4 - 1) * READ_PER_DAY - first.length, rest.length);
+  return [...first, ...rest.slice(0, insertAt), ...deferred, ...rest.slice(insertAt)];
 }
 
 export function dayQuestions(questions, day) {
@@ -121,7 +140,7 @@ function relatedness(current, other) {
   return shared;
 }
 
-export const QUIZ_BANK_VERSION = 14;
+export const QUIZ_BANK_VERSION = 15;
 
 const DAY_QUIZ_ORDER = {
   1: [

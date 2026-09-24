@@ -288,7 +288,7 @@ name = "Aman";       // allowed
           q: "What is a variable declaration, initialization, and assignment?",
           a: `<p>Think of it as creating a variable, giving it a value, and changing its value.</p>
 <p><strong>1. Declaration</strong></p>
-<p>Declaration means creating a variable by telling JavaScript that we want to use a particular variable.</p>
+<p>Variable declaration is the process of creating a variable by specifying its name using <code>var</code>, <code>let</code>, or <code>const</code>.</p>
 <pre><code>let name;</code></pre>
 <p>Here, we have declared <code>name</code>, but haven't given it a value yet.</p>
 <p><strong>2. Initialization</strong></p>
@@ -348,8 +348,28 @@ name = "Rahul";     // assignment</code></pre>`,
         {
           id: "js-types",
           q: "What are JavaScript’s data types?",
-          a: `<p>Primitive types: <code>string</code>, <code>number</code>, <code>boolean</code>, <code>undefined</code>, <code>null</code>, <code>bigint</code>, and <code>symbol</code>. Everything else is an object, including arrays, functions, dates, and maps.</p>
-<p><code>typeof null</code> is <code>"object"</code> — a long-standing language bug. Use <code>Array.isArray()</code> to tell arrays apart from plain objects.</p>`,
+          a: `<p>JavaScript has two categories of data types: primitive and non-primitive. Primitive types represent single values, while non-primitive types are reference-based and are used to store collections or more complex data.</p>
+<p>JavaScript data types are broadly divided into two categories:</p>
+<p><strong>1. Primitive Data Types</strong></p>
+<ul>
+<li><code>String</code></li>
+<li><code>Number</code></li>
+<li><code>Boolean</code></li>
+<li><code>Undefined</code></li>
+<li><code>Null</code></li>
+<li><code>BigInt</code></li>
+<li><code>Symbol</code></li>
+</ul>
+<p><strong>2. Non-Primitive (Reference) Data Types</strong></p>
+<ul>
+<li><code>Object</code></li>
+<li><code>Array</code></li>
+<li><code>Function</code></li>
+<li><code>Date</code></li>
+<li><code>Map</code></li>
+<li><code>Set</code></li>
+<li>and other objects</li>
+</ul>`,
         },
         {
           id: "js-primitive-vs-non",
