@@ -168,16 +168,121 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;");
 }
 
+const COPY_ICON = `<svg class="copy-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path></svg><svg class="copied-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 9.2 17 19 7"></path></svg>`;
+
+const JS_KEYWORDS = new Set(
+  "let const var function return if else for while do switch case break continue new class extends super this typeof instanceof in of try catch finally throw async await yield import export from default true false null undefined".split(
+    " "
+  )
+);
+
+function highlightJs(escaped) {
+  const text = escaped
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">")
+    .replaceAll("&amp;", "&")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&#39;", "'");
+  let html = "";
+  let index = 0;
+  const push = (kind, value) => {
+    html += `<span class="tok-${kind}">${escapeHtml(value)}</span>`;
+  };
+  while (index < text.length) {
+    if (text.startsWith("//", index)) {
+      const end = text.indexOf("\n", index);
+      const stop = end === -1 ? text.length : end;
+      push("comment", text.slice(index, stop));
+      index = stop;
+      continue;
+    }
+    if (text.startsWith("/*", index)) {
+      const end = text.indexOf("*/", index + 2);
+      const stop = end === -1 ? text.length : end + 2;
+      push("comment", text.slice(index, stop));
+      index = stop;
+      continue;
+    }
+    const quote = text[index];
+    if (quote === '"' || quote === "'" || quote === "`") {
+      let cursor = index + 1;
+      while (cursor < text.length) {
+        if (text[cursor] === "\\") {
+          cursor += 2;
+          continue;
+        }
+        if (text[cursor] === quote) {
+          cursor += 1;
+          break;
+        }
+        cursor += 1;
+      }
+      push("string", text.slice(index, cursor));
+      index = cursor;
+      continue;
+    }
+    if (text[index] === "/") {
+      const previous = text.slice(0, index).trimEnd().slice(-1);
+      if (!previous || "=([{,;:!&|?}".includes(previous)) {
+        let cursor = index + 1;
+        while (cursor < text.length && text[cursor] !== "\n") {
+          if (text[cursor] === "\\") {
+            cursor += 2;
+            continue;
+          }
+          if (text[cursor] === "/") {
+            cursor += 1;
+            break;
+          }
+          cursor += 1;
+        }
+        while (cursor < text.length && /[a-z]/i.test(text[cursor])) cursor += 1;
+        push("string", text.slice(index, cursor));
+        index = cursor;
+        continue;
+      }
+    }
+    const before = index === 0 ? "" : text[index - 1];
+    if (/\d/.test(text[index]) && (index === 0 || /[\s([{\],+\-*=<>!&|?:]/.test(before) || before === "/")) {
+      const match = text.slice(index).match(/^\d[\d._]*/);
+      push("number", match[0]);
+      index += match[0].length;
+      continue;
+    }
+    if (/[A-Za-z_$]/.test(text[index])) {
+      const match = text.slice(index).match(/^[A-Za-z_$][\w$]*/);
+      const word = match[0];
+      const call = /^\s*\(/.test(text.slice(index + word.length));
+      if (JS_KEYWORDS.has(word)) push("key", word);
+      else if (call || word === "console") push("fn", word);
+      else push("id", word);
+      index += word.length;
+      continue;
+    }
+    push("plain", text[index]);
+    index += 1;
+  }
+  return html;
+}
+
 function wrapCodeBlocks(html) {
-  return html.replace(/<pre><code>([\s\S]*?)<\/code><\/pre>/g, (_, code) => {
+  const withCode = html.replace(/<pre><code>([\s\S]*?)<\/code><\/pre>/g, (_, code) => {
     return `<div class="code-panel">
       <div class="code-head">
-        <span>Code</span>
-        <button type="button" class="copy-btn">Copy</button>
+        <span class="code-lang"><span aria-hidden="true">&lt;/&gt;</span> JavaScript</span>
+        <button type="button" class="copy-btn" aria-label="Copy">${COPY_ICON}</button>
       </div>
-      <pre><code>${code}</code></pre>
+      <pre><code>${highlightJs(code)}</code></pre>
     </div>`;
   });
+  return withCode.replace(
+    /<p><strong>Output<\/strong><\/p>\s*<p><code>([\s\S]*?)<\/code><\/p>/g,
+    (_, output) => `<p class="output-label">Output:</p>
+      <div class="output-panel">
+        <button type="button" class="copy-btn" aria-label="Copy output">${COPY_ICON}</button>
+        <pre><code>${output.replace(/<br\s*\/?>/gi, "\n")}</code></pre>
+      </div>`
+  );
 }
 
 function renderModules() {
@@ -312,7 +417,7 @@ function renderPlanSidebar() {
   const today = dayQuestions(questions, day);
 
   els.moduleTitle.textContent = "10-day plan";
-  els.moduleTagline.textContent = "JavaScript · 20 to read, then a 40-question practice";
+  els.moduleTagline.textContent = `JavaScript · 20 to read, then a ${QUIZ_SIZE}-question practice`;
   els.progressLabel.textContent = `${passedDays} / ${PLAN_DAYS} days`;
   els.progressPct.textContent = `${pct}%`;
   els.progressBar.style.width = `${pct}%`;
@@ -416,7 +521,7 @@ function renderPlanLesson() {
   els.crumb.textContent = `JavaScript plan · Day ${day} of ${PLAN_DAYS}`;
   els.levelPill.textContent = quiz ? "Practice" : "Read";
   els.callout.textContent =
-    "Read the 20 questions carefully. Practice is required, and the next day opens only after you score more than 30 out of 40.";
+    `Read the 20 questions carefully. Practice is required, and the next day opens only after you score more than ${PASS_SCORE} out of ${QUIZ_SIZE}.`;
   els.lessonTitle.textContent = `Day ${day}`;
   els.lessonLede.textContent = quiz
     ? `Answer all ${QUIZ_SIZE} questions. Day ${day + 1} opens only after you score more than ${PASS_SCORE}.`
@@ -724,11 +829,13 @@ els.quizList.addEventListener("click", (event) => {
   if (isPlanTopic() && handlePlanClick(event)) return;
   const copyBtn = event.target.closest(".copy-btn");
   if (copyBtn) {
-    const code = copyBtn.closest(".code-panel")?.querySelector("code")?.textContent || "";
+    const code = copyBtn.closest(".code-panel, .output-panel")?.querySelector("code")?.textContent || "";
     navigator.clipboard.writeText(code).then(() => {
-      copyBtn.textContent = "Copied";
+      copyBtn.classList.add("is-copied");
+      copyBtn.setAttribute("aria-label", "Copied");
       setTimeout(() => {
-        copyBtn.textContent = "Copy";
+        copyBtn.classList.remove("is-copied");
+        copyBtn.setAttribute("aria-label", "Copy");
       }, 1200);
     });
     return;

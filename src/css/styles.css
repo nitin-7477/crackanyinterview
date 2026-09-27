@@ -579,12 +579,12 @@ a {
   border-radius: 6px;
 }
 
-.code-panel {
-  margin: 12px 0 4px;
-  background: #f7f8f8;
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--brand);
-  border-radius: 12px;
+.code-panel,
+.output-panel {
+  position: relative;
+  margin: 14px 0 8px;
+  background: #26282c;
+  border-radius: 14px;
   overflow: hidden;
 }
 
@@ -592,38 +592,119 @@ a {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--line);
-  color: var(--muted);
-  font-size: 0.82rem;
+  gap: 12px;
+  padding: 12px 14px 0 16px;
+  color: #c8c8c8;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.92rem;
+}
+
+.code-lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .copy-btn {
-  border: 1px solid var(--line);
-  background: #fff;
-  border-radius: 999px;
-  padding: 4px 10px;
-  font-size: 0.78rem;
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  color: #d0d0d0;
+  border-radius: 8px;
+  padding: 0;
   cursor: pointer;
 }
 
-pre {
-  margin: 0;
-  background: transparent;
-  color: #10231f;
-  padding: 14px 16px;
-  overflow: auto;
-  line-height: 1.7;
+.copy-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-pre code {
+.copy-btn .copied-icon {
+  display: none;
+}
+
+.copy-btn.is-copied {
+  color: #7dcea0;
+}
+
+.copy-btn.is-copied .copy-icon {
+  display: none;
+}
+
+.copy-btn.is-copied .copied-icon {
+  display: block;
+}
+
+.copy-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.output-label {
+  margin: 16px 0 8px;
+  font-weight: 700;
+}
+
+.output-panel {
+  padding: 4px 8px 4px 0;
+}
+
+.output-panel .copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.code-panel pre,
+.output-panel pre {
+  margin: 0;
+  background: transparent;
+  color: #e8e8e8;
+  padding: 12px 18px 16px;
+  overflow: auto;
+  line-height: 1.65;
+}
+
+.output-panel pre {
+  padding-right: 46px;
+}
+
+.code-panel pre code,
+.output-panel pre code {
   display: block;
   background: none;
-  color: #10231f;
+  color: #e8e8e8;
   font-weight: 400;
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   padding: 0;
   white-space: pre;
+}
+
+.tok-key,
+.tok-fn {
+  color: #c792ea;
+}
+
+.tok-string,
+.tok-number {
+  color: #e8a07c;
+}
+
+.tok-comment {
+  color: #8d8d8d;
+}
+
+.tok-id,
+.tok-plain {
+  color: #e8e8e8;
 }
 
 .card-actions {

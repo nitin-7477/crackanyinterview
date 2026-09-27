@@ -1,8 +1,8 @@
 export const PLAN_TOPIC = "javascript";
 export const PLAN_DAYS = 10;
 export const READ_PER_DAY = 20;
-export const QUIZ_SIZE = 40;
-export const PASS_SCORE = 30;
+export const QUIZ_SIZE = 20;
+export const PASS_SCORE = 15;
 
 const ITERATOR_GENERATOR_IDS = [
   "js-iterators",
@@ -16,6 +16,123 @@ const ITERATOR_GENERATOR_IDS = [
   "js-generator-return",
   "js-generator-vs-normal",
 ];
+
+const DAY_SIX_IDS = [
+  "js-impure-function",
+  "js-immutability",
+  "js-idempotent",
+  "js-pure-vs-idempotent",
+  "js-function-composition",
+  "js-recursion",
+  "js-tail-recursion",
+  "js-callback-vs-hof",
+  "js-partial-application",
+  "js-currying-vs-partial",
+  "js-error-object",
+  "js-error-types",
+  "js-try-catch-finally",
+  "js-throw-vs-return",
+  "js-try-without-catch",
+  "js-custom-error",
+  "js-object-reference-modify",
+  "js-pass-by-value",
+  "js-missing-property",
+  "js-json-types",
+];
+
+const DAY_SEVEN_IDS = [
+  "js-this",
+  "js-call",
+  "js-apply",
+  "js-bind",
+  "js-strict-this",
+  "js-arrow-callbacks",
+  "js-classes",
+  "js-constructor",
+  "js-class-vs-constructor",
+  "js-prototype",
+  "js-prototype-chain",
+  "js-classes-prototypes",
+  "js-classes-are-prototypes",
+  "js-inheritance",
+  "js-extends",
+  "js-super",
+  "js-static-methods",
+  "js-private-fields",
+  "js-method-overriding",
+  "js-multiple-inheritance",
+];
+
+const DAY_EIGHT_IDS = [
+  "js-sync-vs-async",
+  "js-callback-hell",
+  "js-promises",
+  "js-why-promises",
+  "js-promise-states",
+  "js-promise-chaining",
+  "js-promise-methods",
+  "js-promise-all",
+  "js-promise-allsettled",
+  "js-promise-race",
+  "js-promise-any",
+  "js-async-await",
+  "js-forget-await",
+  "js-await-not-blocking",
+  "js-sequential-vs-parallel",
+  "js-promises-resolve-together",
+  "js-promise-throw",
+  "js-async-error-handling",
+  "js-async-error-handling-ways",
+  "js-allsettled-failed-api",
+];
+
+const DAY_NINE_IDS = [
+  "js-dom",
+  "js-events",
+  "js-event-listener",
+  "js-remove-listeners",
+  "js-event-delegation",
+  "js-settimeout",
+  "js-setinterval",
+  "js-cleartimeout",
+  "js-clearinterval",
+  "js-request-animation-frame",
+  "js-debounce",
+  "js-throttle",
+  "js-event-queue",
+  "js-event-vs-microtask-queue",
+  "js-queue-microtask",
+  "js-event-loop",
+  "js-microtasks-macrotasks",
+  "js-mutation-observer",
+  "js-abort-controller",
+  "js-window-vs-document",
+];
+
+const DAY_TEN_IDS = [
+  "js-v8",
+  "js-v8-how",
+  "js-heap",
+  "js-stack-vs-heap",
+  "js-garbage-collection",
+  "js-memory-leak-causes",
+  "js-identify-memory-leak",
+  "js-identify-fix-memory-leak",
+  "js-memory",
+  "js-inline-caching",
+  "js-jit",
+  "js-tree-shaking",
+  "js-babel",
+  "js-why-babel",
+  "js-transpilation",
+  "js-polyfill",
+  "js-minification",
+  "js-minification-removes",
+  "js-why-minification",
+  "js-obfuscation",
+];
+
+const LATER_DAY_IDS = [DAY_SIX_IDS, DAY_SEVEN_IDS, DAY_EIGHT_IDS, DAY_NINE_IDS, DAY_TEN_IDS];
 
 const DAY_ONE_IDS = [
   "js-what",
@@ -40,7 +157,7 @@ const DAY_ONE_IDS = [
   "js-explicit-implicit",
 ];
 
-export function orderForPlan(questions) {
+function readingOrder(questions) {
   const byId = new Map(questions.map((item) => [item.id, item]));
   const first = DAY_ONE_IDS.map((id) => byId.get(id)).filter(Boolean);
   const used = new Set(first.map((item) => item.id));
@@ -51,6 +168,22 @@ export function orderForPlan(questions) {
   const rest = questions.filter((item) => !used.has(item.id) && !deferredIds.has(item.id));
   const insertAt = Math.min((4 - 1) * READ_PER_DAY - first.length, rest.length);
   return [...first, ...rest.slice(0, insertAt), ...deferred, ...rest.slice(insertAt)];
+}
+
+export function orderForPlan(questions) {
+  const byId = new Map(questions.map((item) => [item.id, item]));
+  const laterIds = LATER_DAY_IDS.flat();
+  const held = new Set([...laterIds, ...ITERATOR_GENERATOR_IDS]);
+  const rest = readingOrder(questions).filter((item) => !held.has(item.id));
+  const dayFourStart = (4 - 1) * READ_PER_DAY;
+  const iterators = ITERATOR_GENERATOR_IDS.map((id) => byId.get(id)).filter(Boolean);
+  const later = laterIds.map((id) => byId.get(id)).filter(Boolean);
+  return [
+    ...rest.slice(0, dayFourStart),
+    ...iterators,
+    ...rest.slice(dayFourStart),
+    ...later,
+  ];
 }
 
 export function dayQuestions(questions, day) {
@@ -140,7 +273,7 @@ function relatedness(current, other) {
   return shared;
 }
 
-export const QUIZ_BANK_VERSION = 15;
+export const QUIZ_BANK_VERSION = 17;
 
 const DAY_QUIZ_ORDER = {
   1: [
@@ -574,11 +707,13 @@ export function buildQuizItems(questions, day) {
   const rest = dayQuestions(questions, day)
     .map((item) => pool.get(item.id))
     .filter((item) => item && !used.has(item.id) && !skipped.has(item.id));
-  const items = [...ordered];
-  let cursor = 0;
-  while (items.length < QUIZ_SIZE && rest.length) {
-    items.push(rest[cursor % rest.length]);
-    cursor += 1;
+  const items = [];
+  const seen = new Set();
+  for (const item of [...ordered, ...rest]) {
+    if (items.length >= QUIZ_SIZE) break;
+    if (!item || seen.has(item.id)) continue;
+    seen.add(item.id);
+    items.push(item);
   }
   return items;
 }
