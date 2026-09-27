@@ -110,6 +110,16 @@ function selectedDay() {
   return isDayUnlocked(day, state.plan.results) ? day : 1;
 }
 
+function openDay(day) {
+  if (!isDayUnlocked(day, state.plan.results)) return;
+  state.plan.selectedDay = day;
+  state.plan.activeQuiz = null;
+  state.questionId = dayQuestions(planQuestions(), day)[0]?.id;
+  savePlan();
+  render();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 function readIds(day) {
   return new Set(state.plan.read[day] || []);
 }
@@ -606,20 +616,21 @@ function renderQuizProgress(quiz) {
     return `<p class="plan-note">${answered}/${quiz.items.length} answered. Choose an answer on every question. The next day stays locked until you finish and score more than ${PASS_SCORE}.</p>`;
   }
   const score = quiz.marks.filter(Boolean).length;
-  const passed = score > PASS_SCORE;
+  const passed = score > PASS_SCORE || Boolean(state.plan.results[quiz.day]?.passed);
   const nextStep =
     quiz.day < PLAN_DAYS
       ? `Day ${quiz.day + 1} is unlocked.`
       : "This was the last day.";
+  const nextButton =
+    passed && quiz.day < PLAN_DAYS
+      ? `<button type="button" class="btn btn-primary" data-next-day>Open Day ${quiz.day + 1}</button>`
+      : "";
   return `<div class="plan-gate">
     <p class="plan-note ${passed ? "is-pass" : "is-fail"}">You scored ${score}/${quiz.items.length}. ${
       passed ? nextStep : `Score more than ${PASS_SCORE} to unlock the next day.`
     }</p>
-    ${
-      passed
-        ? ""
-        : `<button type="button" class="btn btn-primary" data-start-quiz>Retake practice quiz</button>`
-    }
+    ${nextButton}
+    <button type="button" class="btn" data-start-quiz>Try again</button>
   </div>`;
 }
 
@@ -635,28 +646,18 @@ function renderQuizReview(prompt, index, item, quiz) {
       let mark = "";
       if (answered && optionIndex === prompt.correct) mark = " is-correct";
       else if (answered && optionIndex === picked) mark = " is-wrong";
-      const explanation = !answered
-        ? ""
-        : optionIndex === prompt.correct
-          ? prompt.a || prompt.notes?.[optionIndex] || ""
-          : optionIndex === picked
-            ? prompt.notes?.[optionIndex] || ""
-            : "";
-      const why = explanation ? `<div class="choice-why">${explanation}</div>` : "";
       return `
-        <div class="choice-block">
-          <button type="button" class="choice${mark}" data-quiz-q="${index}" data-choice="${optionIndex}" ${answered ? "disabled" : ""}>
-            <span>${letters[optionIndex]}</span>
-            <span>${escapeHtml(option)}</span>
-          </button>
-          ${why}
-        </div>`;
+        <button type="button" class="choice${mark}" data-quiz-q="${index}" data-choice="${optionIndex}" ${answered ? "disabled" : ""}>
+          <span>${letters[optionIndex]}</span>
+          <span>${escapeHtml(option)}</span>
+        </button>`;
     })
     .join("");
-  const verdict =
-    !answered || picked === prompt.correct || prompt.a
-      ? ""
-      : `<p class="plan-note is-fail">Not quite. The correct answer is ${letters[prompt.correct]}.</p>`;
+  const verdict = !answered
+    ? ""
+    : picked === prompt.correct
+      ? `<p class="plan-note is-pass">Correct.</p>`
+      : `<p class="plan-note is-fail">Wrong.</p>`;
   return `
     <article class="qa practice-card" id="quiz-q-${index}">
       <div class="qa-q">
@@ -732,7 +733,8 @@ function handlePlanClick(event) {
     quiz.picks[questionIndex] = optionIndex;
     quiz.marks[questionIndex] = optionIndex === prompt.correct;
     quiz.index = questionIndex;
-    if (answeredCount(quiz) === quiz.items.length) {
+    const finished = answeredCount(quiz) === quiz.items.length;
+    if (finished) {
       const score = quiz.marks.filter(Boolean).length;
       const previous = state.plan.results[quiz.day];
       state.plan.results[quiz.day] = {
@@ -743,6 +745,12 @@ function handlePlanClick(event) {
     }
     savePlan();
     render();
+    if (finished) document.querySelector(".plan-gate")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    return true;
+  }
+
+  if (event.target.closest("[data-next-day]")) {
+    openDay(selectedDay() + 1);
     return true;
   }
 
@@ -795,15 +803,8 @@ els.sidebarNav.addEventListener("click", (event) => {
   }
   const nextDay = event.target.closest("[data-next-day]");
   if (nextDay) {
-    const day = selectedDay();
-    if (nextDay.disabled || !isDayUnlocked(day + 1, state.plan.results)) return;
-    const upcoming = day + 1;
-    state.plan.selectedDay = upcoming;
-    state.plan.activeQuiz = null;
-    state.questionId = dayQuestions(planQuestions(), upcoming)[0]?.id;
-    savePlan();
-    render();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (nextDay.disabled) return;
+    openDay(selectedDay() + 1);
     return;
   }
   const quizButton = event.target.closest("[data-quiz-index]");
