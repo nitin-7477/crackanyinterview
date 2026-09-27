@@ -454,7 +454,6 @@ function renderPlanSidebar() {
   }
 
   const byId = new Map(questions.map((item) => [item.id, item]));
-  const reached = quiz ? answeredCount(quiz) : 0;
   const questionList = quiz
     ? quiz.items
         .map((item, index) => {
@@ -484,8 +483,9 @@ function renderPlanSidebar() {
         )
         .join("");
 
+  const liveScore = quiz ? settleQuiz(quiz) : null;
   if (quiz) {
-    els.timeRemain.textContent = `Day ${day} · ${reached}/${quiz.items.length} answered`;
+    els.timeRemain.textContent = `Day ${day} · ${liveScore.correct}/${liveScore.total} correct`;
   }
 
   const nextUnlocked = isDayUnlocked(day + 1, state.plan.results);
@@ -496,8 +496,16 @@ function renderPlanSidebar() {
         </button>
         <p class="next-day-hint">${
           nextUnlocked
-            ? `Day ${day} is complete. Open Day ${day + 1}.`
-            : `Score more than ${PASS_SCORE} to open Day ${day + 1}.`
+            ? `Day ${day} is complete. Your score: ${
+                state.plan.results[day]?.score ?? liveScore?.correct ?? 0
+              }/${state.plan.results[day]?.total ?? liveScore?.total ?? QUIZ_SIZE}. Open Day ${day + 1}.`
+            : liveScore
+              ? `Your score: ${liveScore.correct}/${liveScore.total}.${
+                  liveScore.done
+                    ? ""
+                    : ` ${liveScore.total - liveScore.answered} still unanswered.`
+                } Score more than ${PASS_SCORE} to open Day ${day + 1}.`
+              : `Score more than ${PASS_SCORE} to open Day ${day + 1}.`
         }</p>`
       : `<p class="next-day-hint">${
           state.plan.results[day]?.passed ? "You finished the 10-day plan." : "This is the last day."
@@ -545,9 +553,10 @@ function renderPlanLesson() {
 
   if (quiz) {
     const byId = new Map(questions.map((item) => [item.id, item]));
-    els.quizList.innerHTML = `${renderQuizProgress(quiz)}${quiz.items
+    const progress = renderQuizProgress(quiz);
+    els.quizList.innerHTML = `${progress}${quiz.items
       .map((prompt, index) => renderQuizReview(prompt, index, byId.get(prompt.id), quiz))
-      .join("")}`;
+      .join("")}${progress}`;
     return;
   }
 
@@ -605,18 +614,55 @@ function renderPlanLesson() {
   els.quizList.innerHTML = `${status}${cards}${start}`;
 }
 
+function quizScore(quiz) {
+  const total = quiz?.items?.length || 0;
+  let answered = 0;
+  let correct = 0;
+  for (let index = 0; index < total; index += 1) {
+    if (!Number.isInteger(quiz.picks?.[index])) continue;
+    answered += 1;
+    if (quiz.marks?.[index]) correct += 1;
+  }
+  return { answered, correct, total, done: total > 0 && answered === total };
+}
+
 function answeredCount(quiz) {
-  return quiz.items.filter((_, index) => Number.isInteger(quiz.picks?.[index])).length;
+  return quizScore(quiz).answered;
+}
+
+function settleQuiz(quiz) {
+  const score = quizScore(quiz);
+  if (!score.done) return score;
+  const previous = state.plan.results[quiz.day];
+  const record = {
+    score: Math.max(score.correct, previous?.score || 0),
+    total: score.total,
+    passed: score.correct > PASS_SCORE || Boolean(previous?.passed),
+  };
+  if (
+    previous &&
+    previous.score === record.score &&
+    previous.total === record.total &&
+    previous.passed === record.passed
+  ) {
+    return score;
+  }
+  state.plan.results[quiz.day] = record;
+  savePlan();
+  return score;
 }
 
 function renderQuizProgress(quiz) {
-  const answered = answeredCount(quiz);
-  const done = answered === quiz.items.length;
+  const score = settleQuiz(quiz);
+  const answered = score.answered;
+  const done = score.done;
   if (!done) {
-    return `<p class="plan-note">${answered}/${quiz.items.length} answered. Choose an answer on every question. The next day stays locked until you finish and score more than ${PASS_SCORE}.</p>`;
+    const remaining = score.total - answered;
+    return `<p class="plan-note">Your score: ${score.correct}/${score.total}. ${remaining} question${
+      remaining === 1 ? "" : "s"
+    } still unanswered. The next day opens after every question is answered and the score is more than ${PASS_SCORE}.</p>`;
   }
-  const score = quiz.marks.filter(Boolean).length;
-  const passed = score > PASS_SCORE || Boolean(state.plan.results[quiz.day]?.passed);
+  const passed = score.correct > PASS_SCORE || Boolean(state.plan.results[quiz.day]?.passed);
   const nextStep =
     quiz.day < PLAN_DAYS
       ? `Day ${quiz.day + 1} is unlocked.`
@@ -626,7 +672,7 @@ function renderQuizProgress(quiz) {
       ? `<button type="button" class="btn btn-primary" data-next-day>Open Day ${quiz.day + 1}</button>`
       : "";
   return `<div class="plan-gate">
-    <p class="plan-note ${passed ? "is-pass" : "is-fail"}">You scored ${score}/${quiz.items.length}. ${
+    <p class="plan-note ${passed ? "is-pass" : "is-fail"}">Your score: ${score.correct}/${quiz.items.length}. ${
       passed ? nextStep : `Score more than ${PASS_SCORE} to unlock the next day.`
     }</p>
     ${nextButton}
@@ -733,19 +779,14 @@ function handlePlanClick(event) {
     quiz.picks[questionIndex] = optionIndex;
     quiz.marks[questionIndex] = optionIndex === prompt.correct;
     quiz.index = questionIndex;
-    const finished = answeredCount(quiz) === quiz.items.length;
-    if (finished) {
-      const score = quiz.marks.filter(Boolean).length;
-      const previous = state.plan.results[quiz.day];
-      state.plan.results[quiz.day] = {
-        score: Math.max(score, previous?.score || 0),
-        total: quiz.items.length,
-        passed: score > PASS_SCORE || Boolean(previous?.passed),
-      };
-    }
+    const finished = quizScore(quiz).done;
+    if (finished) settleQuiz(quiz);
     savePlan();
     render();
-    if (finished) document.querySelector(".plan-gate")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (finished) {
+      const gates = document.querySelectorAll(".plan-gate");
+      gates[gates.length - 1]?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
     return true;
   }
 
