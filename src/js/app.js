@@ -635,30 +635,47 @@ function renderQuizReview(prompt, index, item, quiz) {
       let mark = "";
       if (answered && optionIndex === prompt.correct) mark = " is-correct";
       else if (answered && optionIndex === picked) mark = " is-wrong";
+      const explanation = !answered
+        ? ""
+        : optionIndex === prompt.correct
+          ? prompt.a || prompt.notes?.[optionIndex] || ""
+          : optionIndex === picked
+            ? prompt.notes?.[optionIndex] || ""
+            : "";
+      const why = explanation ? `<div class="choice-why">${explanation}</div>` : "";
       return `
-        <button type="button" class="choice${mark}" data-quiz-q="${index}" data-choice="${optionIndex}" ${answered ? "disabled" : ""}>
-          <span>${letters[optionIndex]}</span>
-          <span>${escapeHtml(option)}</span>
-        </button>`;
+        <div class="choice-block">
+          <button type="button" class="choice${mark}" data-quiz-q="${index}" data-choice="${optionIndex}" ${answered ? "disabled" : ""}>
+            <span>${letters[optionIndex]}</span>
+            <span>${escapeHtml(option)}</span>
+          </button>
+          ${why}
+        </div>`;
     })
     .join("");
-  const verdict = !answered
-    ? ""
-    : picked === prompt.correct
-      ? `<p class="plan-note is-pass">Correct.</p>`
+  const verdict =
+    !answered || picked === prompt.correct || prompt.a
+      ? ""
       : `<p class="plan-note is-fail">Not quite. The correct answer is ${letters[prompt.correct]}.</p>`;
   return `
     <article class="qa practice-card" id="quiz-q-${index}">
       <div class="qa-q">
         <span class="badge q">${index + 1}</span>
         <div>
-          <strong>${escapeHtml(prompt.q || item?.q || "Practice question")}</strong>
+          ${renderQuizQuestion(prompt.q || item?.q || "Practice question")}
           <span class="qa-meta">${answered ? (picked === prompt.correct ? "Correct" : "Wrong") : "Choose an answer"}</span>
         </div>
       </div>
       <div class="choices">${choices}</div>
       ${verdict ? `<div class="plan-actions">${verdict}</div>` : ""}
     </article>`;
+}
+
+function renderQuizQuestion(question) {
+  const [title, ...rest] = String(question).split("\n");
+  const code = rest.join("\n").trim();
+  if (!code) return `<strong>${escapeHtml(title)}</strong>`;
+  return `<strong>${escapeHtml(title)}</strong><pre class="quiz-code"><code>${highlightJs(escapeHtml(code))}</code></pre>`;
 }
 
 function render() {

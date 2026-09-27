@@ -273,7 +273,7 @@ function relatedness(current, other) {
   return shared;
 }
 
-export const QUIZ_BANK_VERSION = 17;
+export const QUIZ_BANK_VERSION = 20;
 
 const DAY_QUIZ_ORDER = {
   1: [
@@ -309,6 +309,28 @@ const DAY_QUIZ_ORDER = {
     "js-var-let-const",
     "js-quiz-primitive-diff",
     "js-quiz-hello-truthy",
+  ],
+  2: [
+    "js-quiz-default-param",
+    "js-quiz-symbol",
+    "js-quiz-nullish-output",
+    "js-quiz-logical-or",
+    "js-quiz-execution-model",
+    "js-quiz-what-function",
+    "js-quiz-filter-map",
+    "js-quiz-first-class",
+    "js-quiz-first-order",
+    "js-quiz-higher-order",
+    "js-quiz-unary",
+    "js-quiz-currying",
+    "js-quiz-pure",
+    "js-quiz-arrow-this",
+    "js-quiz-anonymous",
+    "js-quiz-callback-output",
+    "js-quiz-iife",
+    "js-quiz-destructure",
+    "js-quiz-scope",
+    "js-quiz-curry-double",
   ],
 };
 
@@ -635,16 +657,259 @@ if ("Hello") {
       a: `<p><code>"Hello"</code> is a non-empty string, so it is truthy. The condition runs and logs <code>Truthy</code>.</p>`,
     },
   ],
+  2: [
+    {
+      id: "js-quiz-default-param",
+      q: "What happens when a JavaScript function parameter has a default value and the function is called without providing that argument?",
+      options: [
+        "The function throws an error",
+        "The parameter automatically receives its default value",
+        "The parameter becomes null",
+        "The parameter becomes an empty string",
+      ],
+      correct: 1,
+      a: `<p>A default parameter is used when the corresponding argument is undefined, including when the argument is omitted.</p>`,
+    },
+    {
+      id: "js-quiz-symbol",
+      q: "What is the main purpose of a Symbol in JavaScript?",
+      options: [
+        "To automatically encrypt object properties",
+        "To create a unique primitive value",
+        "To create a mutable object",
+        "To convert strings into numbers",
+      ],
+      correct: 1,
+      a: `<p>A Symbol creates a unique primitive value, which is useful when you need a property key that should not accidentally collide with another key.</p>`,
+    },
+    {
+      id: "js-quiz-nullish-output",
+      q: `What is the output of this JavaScript code?
+const value = 0 ?? 100;
+console.log(value);`,
+      options: ["null", "100", "undefined", "0"],
+      correct: 3,
+      a: `<p>The result is 0 because <code>??</code> preserves valid falsy values such as 0 instead of treating them as missing.</p>`,
+    },
+    {
+      id: "js-quiz-logical-or",
+      q: `What is the output of this JavaScript code?
+let a = 0;
+a ||= 10;
+console.log(a);`,
+      options: ["null", "undefined", "10", "0"],
+      correct: 2,
+      a: `<p>Because 0 is falsy, the <code>||=</code> operator evaluates the right side and assigns 10 to <code>a</code>.</p>`,
+    },
+    {
+      id: "js-quiz-execution-model",
+      q: "Which statement best describes JavaScript's execution model in a typical browser environment?",
+      options: [
+        "JavaScript is inherently multi-threaded, so every function runs on a separate thread",
+        "JavaScript is inherently multi-threaded and every operation is asynchronous",
+        "JavaScript is single-threaded, but asynchronous behavior is enabled through the runtime and event loop",
+        "JavaScript is always synchronous and cannot perform asynchronous operations",
+      ],
+      correct: 2,
+      a: `<p>JavaScript runs on one thread. Asynchronous work is scheduled by the runtime and the event loop, not by starting a new thread for every function.</p>`,
+    },
+    {
+      id: "js-quiz-what-function",
+      q: "Which statement best describes a function in JavaScript?",
+      options: [
+        "A reusable block of code designed to perform a specific task",
+        "An object that can only contain strings",
+        "A variable that can only store numbers",
+        "A loop that automatically repeats forever",
+      ],
+      correct: 0,
+      a: `<p>A function groups reusable behavior that can be executed when the function is called.</p>`,
+    },
+    {
+      id: "js-quiz-filter-map",
+      q: `What is the output of this JavaScript code?
+const nums = [1, 2, 3, 4];
+const result = nums.filter(n => n % 2 === 0).map(n => n * 10);
+console.log(result);`,
+      options: ["[20, 40]", "[10, 20, 30, 40]", "[2, 4]", "60"],
+      correct: 0,
+      a: `<p><code>filter</code> keeps 2 and 4, and <code>map</code> then transforms them to 20 and 40.</p>`,
+    },
+    {
+      id: "js-quiz-first-class",
+      q: "Which example demonstrates that JavaScript functions are first-class values?",
+      options: [
+        "Calling a function only with numeric arguments",
+        "Passing a function as an argument to another function",
+        "Declaring a function only with the function keyword",
+        "Using a function only once in a program",
+      ],
+      correct: 1,
+      a: `<p>Passing a function as an argument demonstrates that functions can be treated like values in JavaScript.</p>`,
+    },
+    {
+      id: "js-quiz-first-order",
+      q: "Which function is a first-order function in JavaScript?",
+      options: [
+        "A function that accepts another function as an argument",
+        "A function that returns another function",
+        "A function that accepts a callback and executes it",
+        "A function that accepts numbers and returns their sum",
+      ],
+      correct: 3,
+      notes: [
+        `<p>Accepting another function as an argument is a defining behavior of a higher-order function, not merely a first-order function.</p>`,
+        "",
+        "",
+        `<p>This function operates only on ordinary values and neither accepts nor returns a function, so it is first-order.</p>`,
+      ],
+      a: `<p>This function operates only on ordinary values and neither accepts nor returns a function, so it is first-order.</p>`,
+    },
+    {
+      id: "js-quiz-higher-order",
+      q: "Which statement correctly describes a higher-order function in JavaScript?",
+      options: [
+        "A function that always returns a number",
+        "A function that is declared using an arrow function",
+        "A function that has more than two parameters",
+        "A function that accepts a function or returns a function",
+      ],
+      correct: 3,
+      a: `<p>A higher-order function operates on functions by accepting one as an argument, returning one, or both.</p>`,
+    },
+    {
+      id: "js-quiz-unary",
+      q: "Which function is a unary function in JavaScript?",
+      options: [
+        "function sum(a, b, c) { return a + b + c; }",
+        'function greet() { return "Hello"; }',
+        "function square(n) { return n * n; }",
+        "function add(a, b) { return a + b; }",
+      ],
+      correct: 2,
+      a: `<p>This function accepts exactly one parameter, <code>n</code>, so it is unary.</p>`,
+    },
+    {
+      id: "js-quiz-currying",
+      q: "What is the main idea behind currying in JavaScript?",
+      options: [
+        "Creating a function that accepts any number of arguments at once",
+        "Executing a function immediately when it is declared",
+        "Converting a function with multiple parameters into a sequence of functions that each take one argument",
+        "Calling a function multiple times with the same arguments",
+      ],
+      correct: 2,
+      a: `<p>Currying transforms a multi-parameter function into a chain of single-argument function calls.</p>`,
+    },
+    {
+      id: "js-quiz-pure",
+      q: "Which function is a pure function?",
+      options: [
+        'function save(data) { localStorage.setItem("data", data); }',
+        "function getRandom() { return Math.random(); }",
+        "function add(a, b) { return a + b; }",
+        "function add(a) { total += a; return total; }",
+      ],
+      correct: 2,
+      a: `<p><code>add</code> returns a result that depends only on its arguments and does not change anything outside the function.</p>`,
+    },
+    {
+      id: "js-quiz-arrow-this",
+      q: "Which statement about JavaScript arrow functions is correct?",
+      options: [
+        "Arrow functions can only contain one statement",
+        "Arrow functions inherit this from their surrounding scope",
+        "Arrow functions have their own this value",
+        "Arrow functions cannot accept parameters",
+      ],
+      correct: 1,
+      a: `<p>Arrow functions use lexical <code>this</code>, meaning <code>this</code> is taken from the surrounding scope rather than created when the function is called.</p>`,
+    },
+    {
+      id: "js-quiz-anonymous",
+      q: "Which example is an anonymous function in JavaScript?",
+      options: [
+        'const greet = function() { return "Hello"; };',
+        'function greet() { return "Hello"; }',
+        "function greet(name) { return name; }",
+        "function calculate(a, b) { return a + b; }",
+      ],
+      correct: 0,
+      a: `<p>The function expression itself has no function name, so it is an anonymous function stored in the <code>greet</code> variable.</p>`,
+    },
+    {
+      id: "js-quiz-callback-output",
+      q: `What is the output of this code?
+function process(value, callback) { return callback(value); }
+
+const result = process(5, x => x * 2); console.log(result);`,
+      options: [
+        "Error because callbacks cannot be passed as arguments",
+        "5",
+        "undefined",
+        "10",
+      ],
+      correct: 3,
+      a: `<p><code>process</code> calls the callback with 5, and <code>x =&gt; x * 2</code> returns 10.</p>`,
+    },
+    {
+      id: "js-quiz-iife",
+      q: "What is the main purpose of an IIFE (Immediately Invoked Function Expression)?",
+      options: [
+        "To make every function asynchronous",
+        "To create and execute a function immediately",
+        "To prevent a function from returning a value",
+        "To define a function that can only be called from another file",
+      ],
+      correct: 1,
+      a: `<p>An IIFE is a function expression that is invoked immediately after it is created.</p>`,
+    },
+    {
+      id: "js-quiz-destructure",
+      q: `What is the output?
+const user = { name: "Nitin", age: 25 }; const { name, age } = user; console.log(name, age);`,
+      options: ["user user", "undefined undefined", "Nitin 25", "name age"],
+      correct: 2,
+      a: `<p>Object destructuring extracts the name and age property values into variables with those names.</p>`,
+    },
+    {
+      id: "js-quiz-scope",
+      q: `What is the output?
+let x = "global";
+
+function test() { let x = "local"; console.log(x); }
+
+test();`,
+      options: ["ReferenceError", "global", "local", "undefined"],
+      correct: 2,
+      a: `<p>The locally declared <code>x</code> takes precedence inside <code>test</code>, so <code>console.log</code> prints local.</p>`,
+    },
+    {
+      id: "js-quiz-curry-double",
+      q: `What is the output of this code?
+const multiply = a => b => a * b; const double = multiply(2);
+
+console.log(double(5));`,
+      options: ["10", "25", "undefined", "7"],
+      correct: 0,
+      a: `<p><code>multiply(2)</code> returns a function that multiplies by 2, so <code>double(5)</code> is 10.</p>`,
+    },
+  ],
 };
 
 function authoredItem(entry) {
-  const options = shuffle(entry.options);
+  const pairs = entry.options.map((option, index) => ({
+    option,
+    note: entry.notes?.[index] || "",
+  }));
+  const shuffled = shuffle(pairs);
   const correctText = entry.options[entry.correct];
   return {
     id: entry.id,
     q: entry.q,
-    options,
-    correct: options.indexOf(correctText),
+    options: shuffled.map((pair) => pair.option),
+    notes: shuffled.map((pair) => pair.note),
+    correct: shuffled.findIndex((pair) => pair.option === correctText),
     ...(entry.a ? { a: entry.a } : {}),
   };
 }
@@ -703,7 +968,32 @@ export function buildQuizItems(questions, day) {
   const order = DAY_QUIZ_ORDER[day] || [];
   const ordered = order.map((id) => pool.get(id)).filter(Boolean);
   const used = new Set(ordered.map((item) => item.id));
-  const skipped = new Set(["js-coercion", "js-explicit-implicit", "js-truthy", "js-primitive-vs-non"]);
+  const skipped = new Set([
+    "js-coercion",
+    "js-explicit-implicit",
+    "js-truthy",
+    "js-primitive-vs-non",
+    "js-default-params",
+    "js-symbol",
+    "js-nullish",
+    "js-logical-assignment",
+    "js-threaded-async",
+    "js-what-function",
+    "js-array-methods",
+    "js-first-class",
+    "js-first-order",
+    "js-higher-order",
+    "js-unary",
+    "js-currying-fn",
+    "js-pure-function",
+    "js-arrow",
+    "js-anonymous",
+    "js-callback",
+    "js-iife",
+    "js-template",
+    "js-destructuring",
+    "js-scope",
+  ]);
   const rest = dayQuestions(questions, day)
     .map((item) => pool.get(item.id))
     .filter((item) => item && !used.has(item.id) && !skipped.has(item.id));

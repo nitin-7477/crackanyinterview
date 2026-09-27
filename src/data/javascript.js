@@ -519,7 +519,21 @@ unaryFunction(5); // Output: 15</code></pre>`,
 }
 
 console.log(add(10)(20)(30)); // 60</code></pre>
-<p>The most important benefits to remember are reusability, partial application, function composition, and modularity.</p>`,
+<p>The same function written with arrow functions:</p>
+<pre><code>const add = (a) => (b) => (c) => a + b + c;
+
+console.log(add(10)(20)(30)); // 60</code></pre>
+<p>Currying is useful because a function can be reused through partial application. Fix the first argument once, then call the new function with the remaining argument.</p>
+<pre><code>const multiply = (a) => (b) => a * b;
+
+const double = multiply(2);
+const triple = multiply(3);
+
+console.log(double(10)); // 20
+console.log(double(50)); // 100
+
+console.log(triple(10)); // 30</code></pre>
+<p>Other benefits are function composition and modularity.</p>`,
         },
         {
           id: "js-pure-function",

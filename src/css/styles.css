@@ -1051,3 +1051,35 @@ a {
 .choice:disabled {
   cursor: default;
 }
+
+.choice-block {
+  display: grid;
+  gap: 6px;
+}
+
+.choice-why {
+  margin: 0 0 4px 54px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.choice-why p {
+  margin: 0;
+}
+
+.quiz-code {
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #26282c;
+  overflow: auto;
+}
+
+.quiz-code code {
+  background: none;
+  color: #e8e8e8;
+  font-weight: 400;
+  padding: 0;
+  white-space: pre;
+}
