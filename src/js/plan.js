@@ -273,7 +273,7 @@ function relatedness(current, other) {
   return shared;
 }
 
-export const QUIZ_BANK_VERSION = 20;
+export const QUIZ_BANK_VERSION = 24;
 
 const DAY_QUIZ_ORDER = {
   1: [
@@ -331,6 +331,28 @@ const DAY_QUIZ_ORDER = {
     "js-quiz-destructure",
     "js-quiz-scope",
     "js-quiz-curry-double",
+  ],
+  3: [
+    "js-quiz-block-scope",
+    "js-quiz-lexical-print",
+    "js-quiz-execution-context",
+    "js-quiz-call-stack-print",
+    "js-quiz-tdz",
+    "js-quiz-closure-count",
+    "js-quiz-closure-why",
+    "js-quiz-memoization",
+    "js-quiz-spread",
+    "js-quiz-shallow-deep",
+    "js-quiz-object-keys",
+    "js-quiz-object-assign",
+    "js-quiz-keys-values-entries",
+    "js-quiz-spread-overwrite",
+    "js-quiz-rest-length",
+    "js-quiz-spread-copy",
+    "js-quiz-deep-copy",
+    "js-quiz-define-properties",
+    "js-quiz-freeze",
+    "js-quiz-has-own",
   ],
 };
 
@@ -895,6 +917,264 @@ console.log(double(5));`,
       a: `<p><code>multiply(2)</code> returns a function that multiplies by 2, so <code>double(5)</code> is 10.</p>`,
     },
   ],
+  3: [
+    {
+      id: "js-quiz-block-scope",
+      q: `What is the output of this code?
+let x = "global";
+
+function test() { let x = "function";
+
+if (true) { let x = "block"; console.log(x); }
+
+console.log(x); }
+
+test(); console.log(x);`,
+      options: [
+        "block → block → global",
+        "global → function → block",
+        "block → function → global",
+        "function → function → global",
+      ],
+      correct: 2,
+      a: `<p>The inner block logs its own <code>x</code>, then the function logs its own <code>x</code>, then the outer log prints the global <code>x</code>.</p>`,
+    },
+    {
+      id: "js-quiz-lexical-print",
+      q: `What will this code print?
+let x = "global";
+
+function outer() { let x = "outer";
+
+function inner() { console.log(x); }
+
+inner(); }
+
+outer();`,
+      options: ["ReferenceError", "undefined", "outer", "global"],
+      correct: 2,
+      a: `<p><code>inner</code> reads <code>x</code> from the surrounding <code>outer</code> function, so it prints outer.</p>`,
+    },
+    {
+      id: "js-quiz-execution-context",
+      q: "When a JavaScript function is called, which of the following is created to manage information such as local variables, parameters, and the value of this?",
+      options: ["Callback Queue", "Prototype Context", "Execution Context", "DOM Context"],
+      correct: 2,
+      a: `<p>A function execution context contains the information needed while that function is executing.</p>`,
+    },
+    {
+      id: "js-quiz-call-stack-print",
+      q: `What will be printed?
+function first() { console.log("first"); second(); }
+
+function second() { console.log("second"); }
+
+first();`,
+      options: ["second only", "first only", "second → first", "first → second"],
+      correct: 3,
+      a: `<p><code>first()</code> is pushed onto the call stack first, then <code>second()</code> is pushed on top of it and executes.</p>`,
+    },
+    {
+      id: "js-quiz-tdz",
+      q: `What happens when this code runs?
+console.log(a); let a = 10;`,
+      options: ["ReferenceError", "SyntaxError", "undefined", "10"],
+      correct: 0,
+      a: `<p>Accessing a <code>let</code> variable before its initialization causes a ReferenceError because it is in the Temporal Dead Zone.</p>`,
+    },
+    {
+      id: "js-quiz-closure-count",
+      q: `What is the output of this code?
+function outer() {
+  let count = 0;
+
+  return function () {
+    count++;
+    console.log(count);
+  };
+}
+
+const counter = outer();
+
+counter();
+counter();`,
+      options: ["1 1", "0 0", "1 2", "2 2"],
+      correct: 2,
+      a: `<p>The returned function keeps the same <code>count</code>. The first call logs 1 and the second logs 2.</p>`,
+    },
+    {
+      id: "js-quiz-closure-why",
+      q: `Why does sayHello() print "John"?
+function greet() {
+  let name = "John";
+
+  return function () {
+    console.log(name);
+  };
+}
+
+const sayHello = greet();
+sayHello();`,
+      options: [
+        "Because name is a global variable",
+        "Because closures remember variables from their outer scope",
+        "Because name is automatically converted to global scope",
+        "Because return makes all variables global",
+      ],
+      correct: 1,
+      a: `<p>The returned function closes over <code>name</code> from <code>greet</code> and can still read it after <code>greet</code> has finished.</p>`,
+    },
+    {
+      id: "js-quiz-memoization",
+      q: "What is the main purpose of memoization?",
+      options: [
+        "To delete unused variables",
+        "To store previously calculated results and reuse them",
+        "To convert objects into arrays",
+        "To create a closure",
+      ],
+      correct: 1,
+      a: `<p>Memoization stores a result for a given input so the same calculation does not have to run again.</p>`,
+    },
+    {
+      id: "js-quiz-spread",
+      q: `What does ... do in this code?
+const numbers = [1, 2, 3];
+const newNumbers = [...numbers, 4];`,
+      options: [
+        "Combines the array into a string",
+        "Copies/unpacks the elements of numbers into a new array",
+        "Removes the elements from numbers",
+        "Creates a nested array",
+      ],
+      correct: 1,
+      a: `<p>The spread operator unpacks <code>numbers</code> into the new array, so <code>newNumbers</code> is <code>[1, 2, 3, 4]</code>.</p>`,
+    },
+    {
+      id: "js-quiz-shallow-deep",
+      q: "What is the main difference between a shallow copy and a deep copy?",
+      options: [
+        "Shallow copy copies only primitive values, while deep copy copies only objects",
+        "Shallow copy shares nested object references, while deep copy creates independent nested copies",
+        "Shallow copy is always slower than deep copy",
+        "There is no difference",
+      ],
+      correct: 1,
+      a: `<p>A shallow copy shares nested objects with the original. A deep copy duplicates those nested objects too.</p>`,
+    },
+    {
+      id: "js-quiz-object-keys",
+      q: `What is the output?
+const user = { name: "Nitin", age: 25 }; console.log(Object.keys(user));`,
+      options: ["name, age", '["name", "age"]', '{"name": "Nitin", "age": 25}', '["Nitin", 25]'],
+      correct: 1,
+      a: `<p><code>Object.keys()</code> returns the object's own property names in an array.</p>`,
+    },
+    {
+      id: "js-quiz-object-assign",
+      q: `What is the output?
+const target = { a: 1 }; const source = { b: 2 };
+
+const result = Object.assign(target, source);
+console.log(result);`,
+      options: ["undefined", "{ a: 1, b: 2 }", "{ a: 1 }", "{ b: 2 }"],
+      correct: 1,
+      a: `<p><code>Object.assign()</code> copies source properties into the target and returns the target object.</p>`,
+    },
+    {
+      id: "js-quiz-keys-values-entries",
+      q: `Which option correctly describes these three methods?
+Object.keys(obj) Object.values(obj) Object.entries(obj)`,
+      options: [
+        "All three return the complete object",
+        "Keys → key-value pairs, Values → keys, Entries → values",
+        "Keys → keys, Values → values, Entries → key-value pairs",
+        "Keys → values, Values → keys, Entries → keys only",
+      ],
+      correct: 2,
+      a: `<p><code>Object.keys()</code> returns property names, <code>Object.values()</code> returns property values, and <code>Object.entries()</code> returns <code>[key, value]</code> pairs.</p>`,
+    },
+    {
+      id: "js-quiz-spread-overwrite",
+      q: `What is the output?
+const user = { name: "Nitin", age: 25 }; const updatedUser = {
+...user, age: 26 };
+
+console.log(updatedUser.age);`,
+      options: ["Error", "26", "25", "undefined"],
+      correct: 1,
+      a: `<p>Object spread copies <code>user</code> first, then the later <code>age: 26</code> property overwrites the copied age.</p>`,
+    },
+    {
+      id: "js-quiz-rest-length",
+      q: `What is the output?
+function sum(first, ...numbers) { return numbers.length; }
+
+console.log(sum(10, 20, 30, 40));`,
+      options: ["4", "3", "1", "40"],
+      correct: 1,
+      a: `<p>The rest parameter <code>numbers</code> collects 20, 30, and 40, so its length is 3.</p>`,
+    },
+    {
+      id: "js-quiz-spread-copy",
+      q: `What is the output?
+const source = { name: "Nitin", age: 25 }; const target = {
+...source }; target.age = 26;
+
+console.log(source.age, target.age);`,
+      options: ["26 26", "26 25", "25 26", "25 25"],
+      correct: 2,
+      a: `<p>Spread copies <code>source</code> into a new object. Changing <code>target.age</code> leaves <code>source.age</code> at 25.</p>`,
+    },
+    {
+      id: "js-quiz-deep-copy",
+      q: "Which approach creates a deep copy of an object containing nested objects, assuming the data is JSON-compatible?",
+      options: [
+        "JSON.parse(JSON.stringify(obj))",
+        "{ ...obj }",
+        "Object.assign({}, obj)",
+        "Object.keys(obj)",
+      ],
+      correct: 0,
+      a: `<p><code>JSON.parse(JSON.stringify(obj))</code> rebuilds nested objects. Spread and <code>Object.assign</code> only copy the top level.</p>`,
+    },
+    {
+      id: "js-quiz-define-properties",
+      q: "Which method is designed to define multiple properties on an object while allowing you to specify descriptors such as writable, enumerable, and configurable?",
+      options: ["Object.assign()", "Object.defineProperties()", "Object.entries()", "Object.keys()"],
+      correct: 1,
+      a: `<p><code>Object.defineProperties()</code> accepts an object of property descriptors and can define multiple properties at once.</p>`,
+    },
+    {
+      id: "js-quiz-freeze",
+      q: `What happens to this object?
+const user = { name: "Nitin" }; Object.freeze(user);
+
+user.name = "Rahul"; user.age = 25;
+
+console.log(user);`,
+      options: [
+        '{ name: "Nitin", age: 25 }',
+        "{}",
+        '{ name: "Nitin" }',
+        '{ name: "Rahul", age: 25 }',
+      ],
+      correct: 2,
+      a: `<p><code>Object.freeze</code> prevents changing existing properties and adding new properties.</p>`,
+    },
+    {
+      id: "js-quiz-has-own",
+      q: "Which is a modern and direct way to check whether an object has a property as its own property, without considering inherited properties?",
+      options: [
+        "obj.name === true",
+        'obj.hasProperty("name")',
+        'Object.hasOwn(obj, "name")',
+        'Object.keys(obj).includes("name")',
+      ],
+      correct: 2,
+      a: `<p><code>Object.hasOwn()</code> checks only the object's own properties and does not walk the prototype chain.</p>`,
+    },
+  ],
 };
 
 function authoredItem(entry) {
@@ -993,6 +1273,26 @@ export function buildQuizItems(questions, day) {
     "js-template",
     "js-destructuring",
     "js-scope",
+    "js-scope-types",
+    "js-lexical-scope",
+    "js-execution-context",
+    "js-call-stack",
+    "js-tdz",
+    "js-closure",
+    "js-memoization",
+    "js-spread-rest",
+    "js-shallow-deep-copy",
+    "js-object-keys",
+    "js-object-keys-values-entries",
+    "js-object-assign",
+    "js-copy-properties",
+    "js-hoisting",
+    "js-object-assign-uses",
+    "js-object-create-vs-assign",
+    "js-define-properties",
+    "js-object-freeze",
+    "js-freeze-vs-seal",
+    "js-has-property",
   ]);
   const rest = dayQuestions(questions, day)
     .map((item) => pool.get(item.id))
