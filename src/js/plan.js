@@ -273,7 +273,7 @@ function relatedness(current, other) {
   return shared;
 }
 
-export const QUIZ_BANK_VERSION = 24;
+export const QUIZ_BANK_VERSION = 27;
 
 const DAY_QUIZ_ORDER = {
   1: [
@@ -353,6 +353,28 @@ const DAY_QUIZ_ORDER = {
     "js-quiz-define-properties",
     "js-quiz-freeze",
     "js-quiz-has-own",
+  ],
+  4: [
+    "js-quiz-iterator",
+    "js-quiz-symbol-iterator",
+    "js-quiz-async-iterator",
+    "js-quiz-generator-keyword",
+    "js-quiz-generator-called",
+    "js-quiz-regular-vs-async",
+    "js-quiz-iterable-iterator",
+    "js-quiz-yield-pause",
+    "js-quiz-generator-returns",
+    "js-quiz-generator-vs-normal",
+    "js-quiz-shadow-output",
+    "js-quiz-illegal-shadow",
+    "js-quiz-computed-key",
+    "js-quiz-delete-age",
+    "js-quiz-double-bang-output",
+    "js-quiz-isnan-output",
+    "js-quiz-isnan-diff",
+    "js-quiz-isfinite-output",
+    "js-quiz-isfinite-diff",
+    "js-quiz-parseint-number",
   ],
 };
 
@@ -1173,6 +1195,345 @@ console.log(user);`,
       ],
       correct: 2,
       a: `<p><code>Object.hasOwn()</code> checks only the object's own properties and does not walk the prototype chain.</p>`,
+    },
+  ],
+  4: [
+    {
+      id: "js-quiz-iterator",
+      q: "What is an iterator in JavaScript?",
+      options: [
+        "A function that can only loop through arrays",
+        "A function that automatically runs forever",
+        "An object that produces a sequence of values using a next() method",
+        "A special type of Promise",
+      ],
+      correct: 2,
+      notes: [
+        "<p>Iterators are not limited to arrays; many JavaScript objects can provide iteration behavior.</p>",
+        "",
+        "<p>Correct. An iterator provides a next() method that returns an object containing value and done.</p>",
+        "",
+      ],
+      a: `<p>An iterator provides a <code>next()</code> method that returns an object containing <code>value</code> and <code>done</code>.</p>`,
+    },
+    {
+      id: "js-quiz-symbol-iterator",
+      q: "What does Symbol.iterator define on an object?",
+      options: [
+        "How the object should be cloned",
+        "How the object can be iterated using protocols such as for...of",
+        "How the object should be converted to JSON",
+        "How the object should be compared with another object",
+      ],
+      correct: 1,
+      notes: [
+        "",
+        "<p>Correct. Symbol.iterator is the well-known symbol used to define an object's default synchronous iterator.</p>",
+        "",
+        "",
+      ],
+      a: `<p><code>Symbol.iterator</code> is the well-known symbol used to define an object's default synchronous iterator.</p>`,
+    },
+    {
+      id: "js-quiz-async-iterator",
+      q: "Which statement correctly describes an Async Iterator?",
+      options: [
+        "It is the same thing as a Promise",
+        "It uses Symbol.iterator and only produces synchronous values",
+        "It uses Symbol.asyncIterator and can produce values asynchronously",
+        "It can only iterate over arrays",
+      ],
+      correct: 2,
+      notes: [
+        "",
+        "",
+        "<p>Correct. Async iterables expose Symbol.asyncIterator and are commonly consumed with for await...of.</p>",
+        "",
+      ],
+      a: `<p>Async iterables expose <code>Symbol.asyncIterator</code> and are commonly consumed with <code>for await...of</code>.</p>`,
+    },
+    {
+      id: "js-quiz-generator-keyword",
+      q: "Which keyword is used to define a Generator Function in JavaScript?",
+      options: ["async", "yield", "function*", "generate"],
+      correct: 2,
+      notes: [
+        "",
+        "<p>yield is used inside generators, but the function itself is declared using the generator syntax.</p>",
+        "<p>Correct. A generator function is declared using function* and can use yield.</p>",
+        "",
+      ],
+      a: `<p>A generator function is declared using <code>function*</code> and can use <code>yield</code>.</p>`,
+    },
+    {
+      id: "js-quiz-generator-called",
+      q: "What happens when a generator function containing yield is called?",
+      options: [
+        "It automatically runs asynchronously in the background",
+        "It can never return a value",
+        "It immediately executes all of its code and returns the final value",
+        "It returns a generator object, and execution pauses at each yield until next() is called",
+      ],
+      correct: 3,
+      notes: [
+        "",
+        "",
+        "",
+        "<p>Correct. Calling the generator creates an iterator-like generator object; next() resumes execution until the next yield or completion.</p>",
+      ],
+      a: `<p>Calling the generator creates an iterator-like generator object. <code>next()</code> resumes execution until the next <code>yield</code> or completion.</p>`,
+    },
+    {
+      id: "js-quiz-regular-vs-async",
+      q: "Which statement correctly describes the difference between a regular generator and an async generator?",
+      options: [
+        "Regular generators are consumed with next(), while async generators are commonly consumed with for await...of",
+        "There is no difference between them",
+        "Regular generators use yield, while async generators cannot use yield",
+        "Regular generators always run asynchronously, while async generators run synchronously",
+      ],
+      correct: 0,
+      notes: [
+        "<p>Correct. Regular generators implement synchronous iteration, while async generators implement asynchronous iteration.</p>",
+        "",
+        "",
+        "<p>The distinction is not that simple; async generators are designed for asynchronous iteration.</p>",
+      ],
+      a: `<p>Regular generators implement synchronous iteration and are consumed with <code>next()</code>. Async generators implement asynchronous iteration and are commonly consumed with <code>for await...of</code>.</p>`,
+    },
+    {
+      id: "js-quiz-iterable-iterator",
+      q: "Which statement correctly explains the difference between an Iterable and an Iterator?",
+      options: [
+        "They are exactly the same concept",
+        "An Iterator has Symbol.iterator, while an Iterable has next()",
+        "An Iterable has a Symbol.iterator method that returns an Iterator; an Iterator has a next() method",
+        "An Iterable can only be an array, while an Iterator can only be an object",
+      ],
+      correct: 2,
+      notes: [
+        "",
+        "",
+        "<p>Correct. The iterable provides a way to obtain an iterator, while the iterator produces the values.</p>",
+        "",
+      ],
+      a: `<p>An iterable has a <code>Symbol.iterator</code> method that returns an iterator. An iterator has a <code>next()</code> method that produces the values.</p>`,
+    },
+    {
+      id: "js-quiz-yield-pause",
+      q: "What happens when JavaScript reaches a yield expression inside a generator?",
+      options: [
+        "The generator automatically starts again from the beginning",
+        "The entire JavaScript program pauses",
+        "The generator terminates permanently",
+        "The generator pauses and returns a value through the current next() call",
+      ],
+      correct: 3,
+      notes: [
+        "",
+        "",
+        "",
+        "<p>Correct. Execution pauses at yield and can later resume when next() is called again.</p>",
+      ],
+      a: `<p>Execution pauses at <code>yield</code> and returns a value through the current <code>next()</code> call. It resumes when <code>next()</code> is called again.</p>`,
+    },
+    {
+      id: "js-quiz-generator-returns",
+      q: `What does calling a generator function return?
+function* numbers() { yield 1; yield 2; }
+
+const result = numbers();`,
+      options: [
+        "The value 1",
+        "undefined",
+        "An array containing [1, 2]",
+        "A Generator object that is also an iterator",
+      ],
+      correct: 3,
+      notes: [
+        "<p>The generator body does not reach its first yield until next() is called.</p>",
+        "",
+        "",
+        "<p>Correct. Calling the generator function creates a generator object, which provides next() and follows the iterator protocol.</p>",
+      ],
+      a: `<p>Calling the generator function creates a generator object, which provides <code>next()</code> and follows the iterator protocol. The body does not reach the first <code>yield</code> until <code>next()</code> is called.</p>`,
+    },
+    {
+      id: "js-quiz-generator-vs-normal",
+      q: "What is a key difference between a generator function and a normal function?",
+      options: [
+        "A normal function cannot return a value",
+        "Generators are always asynchronous",
+        "A generator can pause and resume execution using yield, while a normal function normally runs to completion when called",
+        "Generators cannot accept parameters",
+      ],
+      correct: 2,
+      notes: [
+        "",
+        "",
+        "<p>Correct. Generators provide controlled suspension and resumption through yield and next().</p>",
+        "",
+      ],
+      a: `<p>A generator can pause and resume through <code>yield</code> and <code>next()</code>. A normal function normally runs to completion when called.</p>`,
+    },
+    {
+      id: "js-quiz-shadow-output",
+      q: `What is the output?
+let x = "global";
+
+function test() { let x = "local"; console.log(x); }
+
+test();`,
+      options: ["undefined", "local", "ReferenceError", "global"],
+      correct: 1,
+      notes: [
+        "",
+        "<p>Correct. The local variable shadows the global variable within test().</p>",
+        "",
+        "",
+      ],
+      a: `<p>The local <code>x</code> inside <code>test</code> shadows the global <code>x</code>, so the log prints <code>local</code>.</p>`,
+    },
+    {
+      id: "js-quiz-illegal-shadow",
+      q: "Which situation is an example of illegal shadowing in JavaScript?",
+      options: [
+        "const x = 10; function test() { const x = 20; }",
+        "var x = 10; function test() { let x = 20; }",
+        "let x = 10; { let x = 20; }",
+        "let x = 10; { var x = 20; }",
+      ],
+      correct: 3,
+      notes: [
+        "",
+        "",
+        "",
+        "<p>Correct. A var declaration cannot shadow a let declaration from the same applicable scope chain in this way.</p>",
+      ],
+      a: `<p>A <code>var</code> declaration cannot shadow a <code>let</code> from the same applicable scope chain, so <code>let x = 10; { var x = 20; }</code> is illegal shadowing.</p>`,
+    },
+    {
+      id: "js-quiz-computed-key",
+      q: `What is the output?
+const key = "name"; const user = { [key]: "Nitin" };
+
+console.log(user.name);`,
+      options: ["Nitin", "key", "ReferenceError", "undefined"],
+      correct: 0,
+      notes: [
+        `<p>Correct. [key] evaluates the variable key and uses "name" as the property name.</p>`,
+        "",
+        "",
+        "",
+      ],
+      a: `<p><code>[key]</code> evaluates the variable and uses <code>"name"</code> as the property name, so <code>user.name</code> is <code>"Nitin"</code>.</p>`,
+    },
+    {
+      id: "js-quiz-delete-age",
+      q: `What is the output?
+const user = { name: "Nitin", age: 25 }; delete user.age;
+
+console.log(user);`,
+      options: ["undefined", "{ age: 25 }", '{ name: "Nitin", age: 25 }', '{ name: "Nitin" }'],
+      correct: 3,
+      notes: [
+        "",
+        "",
+        "",
+        "<p>Correct. The age property has been removed from the object.</p>",
+      ],
+      a: `<p><code>delete user.age</code> removes the <code>age</code> property, so the object is <code>{ name: "Nitin" }</code>.</p>`,
+    },
+    {
+      id: "js-quiz-double-bang-output",
+      q: `What is the output?
+console.log(!!0); console.log(!!"hello"); console.log(!!null);`,
+      options: ["true, false, true", "true, true, false", "false, true, false", "false, false, true"],
+      correct: 2,
+      notes: [
+        "",
+        "",
+        "<p>Correct. 0 and null are falsy, while a non-empty string is truthy.</p>",
+        "",
+      ],
+      a: `<p><code>0</code> and <code>null</code> are falsy, and a non-empty string is truthy, so the logs are <code>false</code>, <code>true</code>, <code>false</code>.</p>`,
+    },
+    {
+      id: "js-quiz-isnan-output",
+      q: `What is the output?
+console.log(isNaN("hello")); console.log(isNaN("123"));`,
+      options: ["true, false", "true, true", "false, false", "false, true"],
+      correct: 0,
+      notes: [
+        `<p>Correct. "hello" becomes NaN after coercion, while "123" can be converted to the number 123.</p>`,
+        "",
+        "",
+        "<p>The results are the opposite of global isNaN()'s coercive behavior.</p>",
+      ],
+      a: `<p>Global <code>isNaN</code> coerces its argument. <code>"hello"</code> becomes <code>NaN</code>, and <code>"123"</code> becomes <code>123</code>, so the result is <code>true</code>, <code>false</code>.</p>`,
+    },
+    {
+      id: "js-quiz-isnan-diff",
+      q: "Which statement correctly describes the difference between isNaN() and Number.isNaN()?",
+      options: [
+        "Number.isNaN() converts strings to numbers first",
+        "isNaN() performs type coercion, while Number.isNaN() checks whether the value is actually the numeric NaN",
+        "isNaN() only works with strings",
+        "Both perform exactly the same type coercion",
+      ],
+      correct: 1,
+      notes: [
+        "",
+        "<p>Correct. Number.isNaN() does not coerce its argument.</p>",
+        "",
+        "",
+      ],
+      a: `<p><code>isNaN()</code> coerces its argument before checking. <code>Number.isNaN()</code> returns true only when the value is already the numeric <code>NaN</code>.</p>`,
+    },
+    {
+      id: "js-quiz-isfinite-output",
+      q: `What is the output?
+console.log(isFinite(100)); console.log(isFinite(Infinity));
+console.log(isFinite("100"));`,
+      options: ["true, false, false", "true, false, true", "true, true, false", "false, false, true"],
+      correct: 1,
+      notes: [
+        "",
+        `<p>Correct. 100 is finite, Infinity is not finite, and global isFinite() coerces the string "100" into the number 100.</p>`,
+        "",
+        "",
+      ],
+      a: `<p><code>100</code> is finite, <code>Infinity</code> is not, and global <code>isFinite</code> coerces <code>"100"</code> to <code>100</code>, so the result is <code>true</code>, <code>false</code>, <code>true</code>.</p>`,
+    },
+    {
+      id: "js-quiz-isfinite-diff",
+      q: `What is the output?
+console.log(isFinite("100"));
+console.log(Number.isFinite("100"));`,
+      options: ["false, false", "true, true", "true, false", "false, true"],
+      correct: 2,
+      notes: [
+        "",
+        "",
+        "<p>Correct. Global isFinite() coerces the string, while Number.isFinite() requires the value itself to be a number.</p>",
+        "",
+      ],
+      a: `<p>Global <code>isFinite</code> coerces <code>"100"</code> to a number and returns <code>true</code>. <code>Number.isFinite</code> requires the value itself to be a number, so it returns <code>false</code>.</p>`,
+    },
+    {
+      id: "js-quiz-parseint-number",
+      q: `What is the output?
+console.log(parseInt("123px"));
+console.log(Number("123px"));`,
+      options: ["123, 123", "NaN, 123", "NaN, NaN", "123, NaN"],
+      correct: 3,
+      notes: [
+        "",
+        "",
+        "",
+        "<p>Correct. parseInt() reads the leading integer and stops at the non-numeric characters, while Number() cannot convert the entire string.</p>",
+      ],
+      a: `<p><code>parseInt("123px")</code> reads <code>123</code> and stops at <code>px</code>. <code>Number("123px")</code> cannot convert the whole string, so it returns <code>NaN</code>.</p>`,
     },
   ],
 };

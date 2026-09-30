@@ -2210,7 +2210,34 @@ console.log(add10(20, 30));
         {
           id: "js-iterator-vs-iterable",
           q: "What is the difference between an Iterator and an Iterable?",
-          a: `<p>An iterable is an object that can be iterated over, while an iterator is the object that actually performs the iteration and keeps track of the current position.</p>`,
+          a: `<p>An iterable can be looped one value at a time, and an iterator is the object that hands out those values through <code>next()</code>.</p>
+<p><strong>What is an Iterable?</strong></p>
+<p>An iterable is an object that can be iterated over one value at a time. It implements the <code>Symbol.iterator</code> method, which returns an iterator.</p>
+<pre><code>const numbers = [10, 20, 30];
+
+for (const number of numbers) {
+  console.log(number);
+}</code></pre>
+<p>Here, <code>numbers</code> is an iterable because an array provides the <code>Symbol.iterator</code> method.</p>
+<p>You can also get its iterator:</p>
+<pre><code>const iterator = numbers[Symbol.iterator]();</code></pre>
+<p><strong>What is an Iterator?</strong></p>
+<p>An iterator is an object that provides values one at a time through its <code>next()</code> method. Each call to <code>next()</code> returns an object containing <code>value</code> and <code>done</code>.</p>
+<pre><code>const numbers = [10, 20, 30];
+
+const iterator = numbers[Symbol.iterator]();
+
+console.log(iterator.next());
+// { value: 10, done: false }
+
+console.log(iterator.next());
+// { value: 20, done: false }
+
+console.log(iterator.next());
+// { value: 30, done: false }
+
+console.log(iterator.next());
+// { value: undefined, done: true }</code></pre>`,
         },
         {
           id: "js-yield",
