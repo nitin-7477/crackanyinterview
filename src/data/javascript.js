@@ -501,7 +501,7 @@ higherOrder(firstOrderFunc);</code></pre>
         {
           id: "js-unary",
           q: "What is a unary function?",
-          a: `<p>A unary function (also known as a monadic function) is a function that accepts exactly one argument. The term "unary" simply refers to the function's arity—the number of arguments it takes.</p>
+          a: `<p>A unary function is a function that accepts exactly one argument (input). It performs an operation using that single input.</p>
 <p>Let us take an example of a unary function:</p>
 <pre><code>const unaryFunction = (a) => console.log(a + 10); // This will add 10 to the input and log the result
 unaryFunction(5); // Output: 15</code></pre>`,

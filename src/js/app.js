@@ -692,16 +692,11 @@ function renderQuizReview(prompt, index, item, quiz) {
       let mark = "";
       if (answered && optionIndex === prompt.correct) mark = " is-correct";
       else if (answered && optionIndex === picked) mark = " is-wrong";
-      const note = answered ? prompt.notes?.[optionIndex] : "";
-      const why = note ? `<div class="choice-why">${note}</div>` : "";
       return `
-        <div class="choice-block">
-          <button type="button" class="choice${mark}" data-quiz-q="${index}" data-choice="${optionIndex}" ${answered ? "disabled" : ""}>
-            <span>${letters[optionIndex]}</span>
-            <span>${escapeHtml(option)}</span>
-          </button>
-          ${why}
-        </div>`;
+        <button type="button" class="choice${mark}" data-quiz-q="${index}" data-choice="${optionIndex}" ${answered ? "disabled" : ""}>
+          <span>${letters[optionIndex]}</span>
+          <span>${escapeHtml(option)}</span>
+        </button>`;
     })
     .join("");
   const verdict = !answered
