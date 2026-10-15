@@ -273,7 +273,7 @@ function relatedness(current, other) {
   return shared;
 }
 
-export const QUIZ_BANK_VERSION = 33;
+export const QUIZ_BANK_VERSION = 35;
 
 const DAY_QUIZ_ORDER = {
   1: [
@@ -419,6 +419,28 @@ const DAY_QUIZ_ORDER = {
     "js-pass-by-value",
     "js-missing-property",
     "js-json-types",
+  ],
+  7: [
+    "js-this",
+    "js-call",
+    "js-apply",
+    "js-bind",
+    "js-strict-this",
+    "js-arrow-callbacks",
+    "js-classes",
+    "js-constructor",
+    "js-class-vs-constructor",
+    "js-prototype",
+    "js-prototype-chain",
+    "js-classes-are-prototypes",
+    "js-classes-prototypes",
+    "js-inheritance",
+    "js-extends",
+    "js-super",
+    "js-static-methods",
+    "js-private-fields",
+    "js-method-overriding",
+    "js-multiple-inheritance",
   ],
 };
 
@@ -862,6 +884,206 @@ const QUIZ_BANK = {
       "Every JavaScript data type without restrictions",
     ],
     correct: 1,
+  },
+  "js-this": {
+    q: "What determines the value of `this` in a regular JavaScript function?",
+    options: [
+      "Always the object where the function is defined",
+      "Usually how the function is called",
+      "Always the global object",
+      "Always the first argument passed to the function",
+    ],
+    correct: 1,
+  },
+  "js-call": {
+    q: "What does `call()` do in JavaScript?",
+    options: [
+      "Calls a function immediately with a specified `this` value and individual arguments",
+      "Creates a copy of a function without calling it",
+      "Calls a function with all arguments packed into an array",
+      "Automatically binds `this` permanently",
+    ],
+    correct: 0,
+  },
+  "js-apply": {
+    q: "How is `apply()` different from `call()`?",
+    options: [
+      "`apply()` never invokes the function",
+      "`apply()` permanently binds `this`",
+      "`apply()` accepts arguments as an array or array-like object",
+      "`apply()` works only with arrow functions",
+    ],
+    correct: 2,
+  },
+  "js-bind": {
+    q: "What does `bind()` return?",
+    options: [
+      "The result of immediately executing the function",
+      "A new function with a specified `this` value and optionally preset arguments",
+      "An array containing the function's arguments",
+      "A new object created from the function",
+    ],
+    correct: 1,
+  },
+  "js-strict-this": {
+    q: "What happens to `this` when a regular function is called without an object in strict mode?",
+    options: [
+      "It always refers to `window`",
+      "It refers to the function itself",
+      "It becomes an empty object",
+      "It is `undefined`",
+    ],
+    correct: 3,
+  },
+  "js-arrow-callbacks": {
+    q: "Why are arrow functions commonly used as callbacks?",
+    options: [
+      "They always execute faster than regular functions",
+      "They inherit `this` from their surrounding scope and offer concise syntax",
+      "They automatically handle asynchronous errors",
+      "They can only be used as callbacks",
+    ],
+    correct: 1,
+  },
+  "js-classes": {
+    q: "What are classes in ES6?",
+    options: [
+      "A new primitive data type",
+      "A way to create CSS styles in JavaScript",
+      "A cleaner syntax for creating objects and working with prototype-based inheritance",
+      "A replacement for all JavaScript functions",
+    ],
+    correct: 2,
+  },
+  "js-constructor": {
+    q: "What is a constructor in JavaScript?",
+    options: [
+      "A special method that initializes a class instance when created with `new`",
+      "A method that destroys an object",
+      "A function that can only return strings",
+      "A method that runs every time an object's property is accessed",
+    ],
+    correct: 0,
+  },
+  "js-class-vs-constructor": {
+    q: "What is the difference between a class and a constructor function?",
+    options: [
+      "Classes use prototypes, but constructor functions do not",
+      "Constructor functions must always be called with `new`, but classes do not",
+      "There is no difference in syntax or behavior",
+      "Classes provide dedicated syntax and cannot be called without `new`; constructor functions are regular functions that can also be called normally",
+    ],
+    correct: 3,
+  },
+  "js-prototype": {
+    q: "What is prototypal inheritance?",
+    options: [
+      "Copying every method from one object into another automatically",
+      "A mechanism where an object can access properties and methods through another object in its prototype chain",
+      "A way to inherit variables from CSS",
+      "A feature available only inside ES6 classes",
+    ],
+    correct: 1,
+  },
+  "js-prototype-chain": {
+    q: "What is the Prototype Chain in JavaScript?",
+    options: [
+      "A sequence of functions executed in a fixed order",
+      "A chain of objects JavaScript searches when a property is not found on the current object",
+      "A list of classes stored in an array",
+      "A mechanism that copies every property from parent objects",
+    ],
+    correct: 1,
+  },
+  "js-classes-are-prototypes": {
+    q: "Are JavaScript classes internally based on classes or prototypes?",
+    options: [
+      "They are based on Java-style classes internally",
+      "They use prototypes underneath, with class syntax providing a cleaner way to work with them",
+      "They do not use prototypes at all",
+      "They are converted into JSON objects",
+    ],
+    correct: 1,
+  },
+  "js-classes-prototypes": {
+    q: "How are JavaScript classes related to prototypes?",
+    options: [
+      "Methods defined in a class are generally placed on its prototype and shared by instances",
+      "Every class method is copied separately onto every instance",
+      "Prototypes are used only for arrow functions",
+      "A class and its prototype are exactly the same object",
+    ],
+    correct: 0,
+  },
+  "js-inheritance": {
+    q: "What is inheritance in JavaScript?",
+    options: [
+      "Creating a variable inside another function",
+      "Converting an object into a primitive value",
+      "Allowing an object or class to reuse or extend behavior from another object or class",
+      "Copying an entire program into another file",
+    ],
+    correct: 2,
+  },
+  "js-extends": {
+    q: "What does the `extends` keyword do in JavaScript?",
+    options: [
+      "Makes a function asynchronous",
+      "Creates a new primitive data type",
+      "Prevents a class from being instantiated",
+      "Declares that a class inherits from another class",
+    ],
+    correct: 3,
+  },
+  "js-super": {
+    q: "What is the `super` keyword in JavaScript?",
+    options: [
+      "It creates a new independent object",
+      "It refers to the global object",
+      "It is used to call a parent class constructor or access parent methods",
+      "It makes every method static",
+    ],
+    correct: 2,
+  },
+  "js-static-methods": {
+    q: "What are static methods in JavaScript?",
+    options: [
+      "Methods that belong to the class itself rather than its instances",
+      "Methods that can only run once",
+      "Methods that automatically become private",
+      "Methods inherited only by object instances",
+    ],
+    correct: 0,
+  },
+  "js-private-fields": {
+    q: "What are private class fields in JavaScript?",
+    options: [
+      "Properties whose names begin with an underscore",
+      "Properties that are hidden only in browser developer tools",
+      "Properties that can be accessed by any subclass",
+      "Fields declared with `#` that can only be accessed within the class's permitted private scope",
+    ],
+    correct: 3,
+  },
+  "js-method-overriding": {
+    q: "What is method overriding in JavaScript?",
+    options: [
+      "Defining two methods with the same name in one object and running both automatically",
+      "A child class providing its own implementation of a method inherited from its parent",
+      "Changing a method into a variable",
+      "Calling a method without parentheses",
+    ],
+    correct: 1,
+  },
+  "js-multiple-inheritance": {
+    q: "Does JavaScript support multiple inheritance?",
+    options: [
+      "Yes, a class can directly extend any number of classes",
+      "Yes, using multiple `extends` keywords",
+      "No, a class can directly extend only one class, but mixins and composition can combine behavior from multiple sources",
+      "No, JavaScript cannot reuse behavior from other objects",
+    ],
+    correct: 2,
   },
 };
 
