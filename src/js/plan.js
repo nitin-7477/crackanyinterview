@@ -273,7 +273,7 @@ function relatedness(current, other) {
   return shared;
 }
 
-export const QUIZ_BANK_VERSION = 30;
+export const QUIZ_BANK_VERSION = 31;
 
 const DAY_QUIZ_ORDER = {
   1: [
@@ -444,8 +444,8 @@ const QUIZ_BANK = {
   "js-parsefloat-vs-number": {
     q: "What is the difference between parseFloat() and Number()?",
     options: [
-      "parseFloat() converts only integers, while Number() converts decimals.",
-      "parseFloat() parses a number from the beginning of a string, while Number() converts the entire value.",
+      "parseFloat() converts only whole numbers, while Number() converts decimal numbers.",
+      "parseFloat() reads a number from the start of a string and stops when it encounters an invalid character, while Number() tries to convert the entire string into a number.",
       "Both always return the same result.",
       "Number() works only with strings, while parseFloat() works only with numbers.",
     ],
