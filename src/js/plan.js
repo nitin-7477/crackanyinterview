@@ -273,7 +273,7 @@ function relatedness(current, other) {
   return shared;
 }
 
-export const QUIZ_BANK_VERSION = 27;
+export const QUIZ_BANK_VERSION = 30;
 
 const DAY_QUIZ_ORDER = {
   1: [
@@ -376,6 +376,28 @@ const DAY_QUIZ_ORDER = {
     "js-quiz-isfinite-diff",
     "js-quiz-parseint-number",
   ],
+  5: [
+    "js-parsefloat-vs-number",
+    "js-local-storage",
+    "js-session-storage",
+    "js-cookie",
+    "js-storage-difference",
+    "js-global-this",
+    "js-async-thunk",
+    "js-strict-mode",
+    "js-undeclared-vs-undefined",
+    "js-strict-mode-changes",
+    "js-minification-vs-obfuscation",
+    "js-obfuscation-vs-encryption",
+    "js-localstorage-json",
+    "js-json",
+    "js-thunk",
+    "js-array-mutate",
+    "js-modules",
+    "js-map",
+    "js-string-immutable",
+    "js-set",
+  ],
 };
 
 const QUIZ_BANK = {
@@ -418,6 +440,206 @@ const QUIZ_BANK = {
       "A special data type used to store only numbers.",
     ],
     correct: 0,
+  },
+  "js-parsefloat-vs-number": {
+    q: "What is the difference between parseFloat() and Number()?",
+    options: [
+      "parseFloat() converts only integers, while Number() converts decimals.",
+      "parseFloat() parses a number from the beginning of a string, while Number() converts the entire value.",
+      "Both always return the same result.",
+      "Number() works only with strings, while parseFloat() works only with numbers.",
+    ],
+    correct: 1,
+  },
+  "js-local-storage": {
+    q: "What is localStorage in JavaScript?",
+    options: [
+      "It stores data only until the browser tab is closed.",
+      "It stores data on the server.",
+      "It stores data in the browser that persists even after the browser is closed.",
+      "It stores data only for a single HTTP request.",
+    ],
+    correct: 2,
+  },
+  "js-session-storage": {
+    q: "What is sessionStorage?",
+    options: [
+      "It stores data permanently across all browser sessions.",
+      "It stores data for a page's browsing session, usually until that tab or window is closed.",
+      "It stores data in a database on the server.",
+      "It stores data that is automatically sent with every HTTP request.",
+    ],
+    correct: 1,
+  },
+  "js-cookie": {
+    q: "What is a Cookie in web development?",
+    options: [
+      "A JavaScript function used to convert strings into numbers.",
+      "A type of database stored only on a remote server.",
+      "A browser storage mechanism whose data can be sent to the server with matching HTTP requests.",
+      "A storage method that always deletes data when the tab closes.",
+    ],
+    correct: 2,
+  },
+  "js-storage-difference": {
+    q: "What is the main difference between localStorage, sessionStorage, and Cookies?",
+    options: [
+      "All three store data in exactly the same way and have the same lifetime.",
+      "localStorage persists across sessions, sessionStorage is scoped to a page session, and Cookies can be sent with HTTP requests.",
+      "Cookies are never sent to a server, but localStorage is automatically sent.",
+      "sessionStorage persists permanently, while localStorage is deleted when the tab closes.",
+    ],
+    correct: 1,
+  },
+  "js-global-this": {
+    q: "What is `globalThis` in JavaScript?",
+    options: [
+      "A variable that can only be accessed inside a function.",
+      "A standard way to access the global object across different JavaScript environments.",
+      "A method used to declare global variables.",
+      "An object available only in web browsers.",
+    ],
+    correct: 1,
+  },
+  "js-async-thunk": {
+    q: "What is an Asynchronous Thunk?",
+    options: [
+      "A function that immediately executes every asynchronous operation when defined.",
+      "A function that returns another function, allowing an operation to be performed later when the returned function is called.",
+      "A JavaScript keyword used to pause a loop.",
+      "A function that converts asynchronous code into synchronous code.",
+    ],
+    correct: 1,
+  },
+  "js-strict-mode": {
+    q: "What is Strict Mode in JavaScript?",
+    options: [
+      "A mode that makes JavaScript code execute faster.",
+      "A mode that disables all asynchronous operations.",
+      "A mode that enables stricter parsing and error checking, helping catch certain coding mistakes.",
+      "A mode that prevents the use of functions.",
+    ],
+    correct: 2,
+  },
+  "js-undeclared-vs-undefined": {
+    q: "What is the difference between an undeclared and an undefined variable?",
+    options: [
+      "They mean exactly the same thing in every situation.",
+      "An undeclared variable has not been declared in the accessible scope, while an undefined variable may be declared but have the value `undefined`.",
+      "An undeclared variable always has the value `null`.",
+      "An undefined variable cannot be declared using `let` or `const`.",
+    ],
+    correct: 1,
+  },
+  "js-strict-mode-changes": {
+    q: "What changes when Strict Mode is enabled?",
+    options: [
+      "Assigning to an undeclared variable silently creates a global variable.",
+      "Duplicate parameter names are always allowed in ordinary functions.",
+      "Some silent errors become exceptions, and certain unsafe or confusing language features are restricted.",
+      "All variables automatically become constants.",
+    ],
+    correct: 2,
+  },
+  "js-minification-vs-obfuscation": {
+    q: "What is the difference between Minification and Obfuscation?",
+    options: [
+      "Minification encrypts code, while obfuscation converts it into JSON.",
+      "Minification reduces code size by removing unnecessary characters, while obfuscation makes code harder to understand.",
+      "Minification makes code harder to understand, while obfuscation only reduces file size.",
+      "Both techniques perform exactly the same task.",
+    ],
+    correct: 1,
+  },
+  "js-obfuscation-vs-encryption": {
+    q: "What is the difference between Obfuscation and Encryption?",
+    options: [
+      "Obfuscation makes code harder to understand, while encryption transforms data using a key and requires decryption to recover the original.",
+      "Obfuscation always requires a secret key, while encryption does not.",
+      "Both are security techniques that make the original code impossible to recover.",
+      "Encryption only reduces code size, while obfuscation compresses files.",
+    ],
+    correct: 0,
+  },
+  "js-localstorage-json": {
+    q: "How would you store an array or object in localStorage?",
+    options: [
+      "Call `localStorage.setItem('data', object)` directly and retrieve it as an object.",
+      "Use `JSON.parse()` to store it and `JSON.stringify()` to retrieve it.",
+      "Use `JSON.stringify()` before storing and `JSON.parse()` after retrieving.",
+      "localStorage automatically stores arrays and objects in their original formats.",
+    ],
+    correct: 2,
+  },
+  "js-json": {
+    q: "What are JSON, JSON.stringify(), and JSON.parse()?",
+    options: [
+      "JSON is a JavaScript loop, stringify converts JSON into an object, and parse converts objects into strings.",
+      "JSON is a data format, JSON.stringify() converts a JavaScript value into a JSON string, and JSON.parse() converts valid JSON text into a JavaScript value.",
+      "JSON is a database, stringify encrypts data, and parse decrypts it.",
+      "JSON.stringify() and JSON.parse() both convert values into strings.",
+    ],
+    correct: 1,
+  },
+  "js-thunk": {
+    q: "What is a Thunk Function?",
+    options: [
+      "A function that can only run once.",
+      "A function that always executes immediately when defined.",
+      "A function that wraps an operation or computation so it can be executed later when called.",
+      "A function used exclusively to encrypt data.",
+    ],
+    correct: 2,
+  },
+  "js-array-mutate": {
+    q: "Which statement about JavaScript array methods is correct?",
+    options: [
+      "`map()` and `filter()` mutate the original array.",
+      "`push()` and `splice()` never mutate the original array.",
+      "`sort()` and `reverse()` mutate the original array, while `map()` and `filter()` return new arrays.",
+      "All JavaScript array methods mutate the original array.",
+    ],
+    correct: 2,
+  },
+  "js-modules": {
+    q: "How do ES Modules differ from CommonJS?",
+    options: [
+      "ES Modules use `import` and `export`, while CommonJS commonly uses `require()` and `module.exports`.",
+      "ES Modules use `require()`, while CommonJS uses `import` and `export` exclusively.",
+      "Both use exactly the same syntax and loading behavior.",
+      "CommonJS is only supported in browsers, while ES Modules are only supported in Node.js.",
+    ],
+    correct: 0,
+  },
+  "js-map": {
+    q: "What is `Map` in JavaScript?",
+    options: [
+      "A method that sorts arrays alphabetically.",
+      "A collection of unique values without keys.",
+      "An object that stores only string keys and numeric values.",
+      "A collection of key-value pairs where keys can be values of any type.",
+    ],
+    correct: 3,
+  },
+  "js-string-immutable": {
+    q: "Are strings mutable or immutable in JavaScript?",
+    options: [
+      "Strings are mutable, so individual characters can be changed directly.",
+      "Strings are immutable, so their characters cannot be changed in place; operations produce new strings.",
+      "Strings become immutable only when declared with `const`.",
+      "Strings are mutable only inside functions.",
+    ],
+    correct: 1,
+  },
+  "js-set": {
+    q: "What is `Set` in JavaScript?",
+    options: [
+      "A collection that automatically stores duplicate values.",
+      "A key-value collection where every key must be a string.",
+      "A collection of unique values, which does not store duplicates.",
+      "An array method that removes every value from an array.",
+    ],
+    correct: 2,
   },
 };
 

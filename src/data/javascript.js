@@ -1342,7 +1342,16 @@ console.log(Number(""));   // 0</code></pre>`,
         {
           id: "js-parsefloat-vs-number",
           q: "What is the difference between parseFloat() and Number()?",
-          a: `<p>Both are used to convert values into numbers, but <code>parseFloat()</code> parses a string and extracts a decimal number from the beginning, while <code>Number()</code> tries to convert the entire value into a number. <code>parseFloat()</code> can stop when it reaches an invalid character, whereas <code>Number()</code> returns <code>NaN</code> if the complete value isn't a valid number.</p>`,
+          a: `<p>Both are used to convert values into numbers, but <code>parseFloat()</code> parses a string and extracts a decimal number from the beginning, while <code>Number()</code> tries to convert the entire value into a number. <code>parseFloat()</code> can stop when it reaches an invalid character, whereas <code>Number()</code> returns <code>NaN</code> if the complete value isn't a valid number.</p>
+<p><strong>Example</strong></p>
+<pre><code>console.log(parseFloat("10.25px")); // 10.25
+console.log(parseFloat("10.25"));    // 10.25
+console.log(parseFloat(10.25));      // 10.25
+
+console.log(Number("10.25px"));      // NaN
+console.log(Number("10.25"));        // 10.25
+console.log(Number(10.25));          // 10.25</code></pre>
+<p><code>parseFloat("10.25px")</code> reads <code>10.25</code> and stops at <code>p</code>. <code>Number("10.25px")</code> rejects the whole string, so it returns <code>NaN</code>. A plain number, or a string that is only a number, works with both.</p>`,
         },
         {
           id: "js-dom",
