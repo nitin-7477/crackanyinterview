@@ -273,7 +273,7 @@ function relatedness(current, other) {
   return shared;
 }
 
-export const QUIZ_BANK_VERSION = 31;
+export const QUIZ_BANK_VERSION = 33;
 
 const DAY_QUIZ_ORDER = {
   1: [
@@ -397,6 +397,28 @@ const DAY_QUIZ_ORDER = {
     "js-map",
     "js-string-immutable",
     "js-set",
+  ],
+  6: [
+    "js-impure-function",
+    "js-immutability",
+    "js-idempotent",
+    "js-pure-vs-idempotent",
+    "js-function-composition",
+    "js-recursion",
+    "js-tail-recursion",
+    "js-callback-vs-hof",
+    "js-partial-application",
+    "js-currying-vs-partial",
+    "js-error-object",
+    "js-error-types",
+    "js-try-catch-finally",
+    "js-throw-vs-return",
+    "js-try-without-catch",
+    "js-custom-error",
+    "js-object-reference-modify",
+    "js-pass-by-value",
+    "js-missing-property",
+    "js-json-types",
   ],
 };
 
@@ -640,6 +662,206 @@ const QUIZ_BANK = {
       "An array method that removes every value from an array.",
     ],
     correct: 2,
+  },
+  "js-impure-function": {
+    q: "What is an Impure Function?",
+    options: [
+      "A function that always returns `undefined`.",
+      "A function that has side effects or produces different results for the same input because it depends on changing external state.",
+      "A function that never accepts parameters.",
+      "A function that always returns the same output for the same input.",
+    ],
+    correct: 1,
+  },
+  "js-immutability": {
+    q: "What is Immutability in JavaScript?",
+    options: [
+      "The ability to change an object's properties whenever needed.",
+      "A rule that prevents variables from being declared with `let`.",
+      "The principle of not changing existing data directly, but creating new data when changes are needed.",
+      "A feature that makes every JavaScript variable constant.",
+    ],
+    correct: 2,
+  },
+  "js-idempotent": {
+    q: "What is an Idempotent Function?",
+    options: [
+      "A function that always returns the same result for every possible input.",
+      "A function that can only be called once.",
+      "A function that changes its input every time it runs.",
+      "A function that satisfies f(f(x)) = f(x), meaning applying it again to its result makes no further change.",
+    ],
+    correct: 3,
+  },
+  "js-pure-vs-idempotent": {
+    q: "What is the key difference between a Pure Function and an Idempotent Function?",
+    options: [
+      "A pure function always modifies external state, while an idempotent function never returns a value.",
+      "A pure function returns the same output for the same input without side effects; an idempotent function produces no further change when its operation is applied repeatedly to its result.",
+      "Both terms mean exactly the same thing.",
+      "A pure function must be asynchronous, while an idempotent function must be synchronous.",
+    ],
+    correct: 1,
+  },
+  "js-function-composition": {
+    q: "What is Function Composition?",
+    options: [
+      "Combining functions so that the output of one function becomes the input of another.",
+      "Putting multiple functions inside a JavaScript class.",
+      "Calling the same function repeatedly with the same input.",
+      "Combining two arrays into one array using `concat()`.",
+    ],
+    correct: 0,
+  },
+  "js-recursion": {
+    q: "What is Recursion in JavaScript?",
+    options: [
+      "A function that calls itself to solve a problem in smaller steps.",
+      "A function that can only be called once.",
+      "A function that always returns another function.",
+      "A loop that runs forever.",
+    ],
+    correct: 0,
+  },
+  "js-tail-recursion": {
+    q: "What is Tail Recursion?",
+    options: [
+      "Recursion that can only be used with arrays.",
+      "Recursion where the function call happens before any other operation in the function.",
+      "Recursion where the recursive call is the final operation performed by the function.",
+      "Recursion that does not require a base case.",
+    ],
+    correct: 2,
+  },
+  "js-callback-vs-hof": {
+    q: "What is the difference between a Callback and a Higher-Order Function?",
+    options: [
+      "A callback always runs asynchronously, while a higher-order function always runs synchronously.",
+      "A callback is a function passed to or invoked by another function; a higher-order function accepts a function as an argument or returns a function.",
+      "A callback must return a value, while a higher-order function cannot return anything.",
+      "They are two names for exactly the same concept.",
+    ],
+    correct: 1,
+  },
+  "js-partial-application": {
+    q: "What is Partial Application?",
+    options: [
+      "Calling a function without providing any arguments.",
+      "Breaking a function into multiple files.",
+      "Executing a function only once.",
+      "Creating a new function by fixing some of the arguments of an existing function.",
+    ],
+    correct: 3,
+  },
+  "js-currying-vs-partial": {
+    q: "What is the difference between Currying and Partial Application?",
+    options: [
+      "Currying transforms a multi-argument function into a sequence of single-argument functions; partial application fixes some arguments to create a function that needs fewer arguments.",
+      "Currying always fixes the first argument, while partial application always creates single-argument functions.",
+      "Currying applies only to asynchronous functions, while partial application applies only to synchronous functions.",
+      "There is no difference between them.",
+    ],
+    correct: 0,
+  },
+  "js-error-object": {
+    q: "What is an Error Object in JavaScript?",
+    options: [
+      "An object that stores information about an error, such as its name and message",
+      "A function that automatically fixes errors",
+      "A variable that stores only numbers",
+      "A method used to stop loops",
+    ],
+    correct: 0,
+  },
+  "js-error-types": {
+    q: "What are the different types of JavaScript errors?",
+    options: [
+      "SyntaxError, TypeError, ReferenceError, RangeError, and more",
+      "Only SyntaxError and TypeError",
+      "HTML error, CSS error, and JavaScript error",
+      "Only errors created using `throw`",
+    ],
+    correct: 0,
+  },
+  "js-try-catch-finally": {
+    q: "What is the purpose of try...catch...finally?",
+    options: [
+      "To declare variables and functions",
+      "To handle exceptions and optionally run cleanup code",
+      "To repeat a block of code until it succeeds",
+      "To return values from every function",
+    ],
+    correct: 1,
+  },
+  "js-throw-vs-return": {
+    q: "What is the difference between throw and return?",
+    options: [
+      "Both always stop the entire application",
+      "`throw` sends an error or exception; `return` exits a function and optionally provides a value",
+      "`return` throws an error, while `throw` returns a value",
+      "There is no difference",
+    ],
+    correct: 1,
+  },
+  "js-try-without-catch": {
+    q: "Can we have a try block without catch?",
+    options: [
+      "No, every try must have catch",
+      "Yes, but only when it contains a return statement",
+      "Yes, if it is followed by a finally block",
+      "Yes, a try block can always stand alone",
+    ],
+    correct: 2,
+  },
+  "js-custom-error": {
+    q: "How do you create a Custom Error in JavaScript?",
+    options: [
+      "By creating a class that extends the built-in `Error` class",
+      "By declaring a variable with the name `Error`",
+      "By using `console.error()` only",
+      "By creating a function that returns a string",
+    ],
+    correct: 0,
+  },
+  "js-object-reference-modify": {
+    q: "What happens if you modify an object that was assigned to another variable?",
+    options: [
+      "The second variable always gets an independent copy",
+      "Both variables can reflect the change because they refer to the same object",
+      "JavaScript automatically freezes the object",
+      "The second variable becomes undefined",
+    ],
+    correct: 1,
+  },
+  "js-pass-by-value": {
+    q: "Which statement best describes pass-by-value and reference behavior in JavaScript?",
+    options: [
+      "Objects are always passed by reference, so variables can be reassigned through functions",
+      "Primitives and objects are both passed by value; for objects, the copied value is a reference to the same object",
+      "Primitives are passed by reference, but objects are passed by value",
+      "JavaScript uses pass-by-reference for every data type",
+    ],
+    correct: 1,
+  },
+  "js-missing-property": {
+    q: "What happens when you access a property that doesn't exist on an object?",
+    options: [
+      "JavaScript automatically creates the property with a value of null",
+      "JavaScript throws a ReferenceError in every case",
+      "The property access returns undefined",
+      "The property access always returns false",
+    ],
+    correct: 2,
+  },
+  "js-json-types": {
+    q: "Which data types are supported by JSON?",
+    options: [
+      "Functions, symbols, and undefined",
+      "Objects, arrays, strings, numbers, booleans, and null",
+      "Only strings and numbers",
+      "Every JavaScript data type without restrictions",
+    ],
+    correct: 1,
   },
 };
 

@@ -2057,22 +2057,31 @@ console.log(updatedUser.age); // 26</code></pre>`,
         {
           id: "js-idempotent",
           q: "What is an Idempotent Function?",
-          a: `<p>An operation is idempotent if doing it multiple times has the same final effect as doing it once.</p>
-<pre><code>let user = {
-  name: "Nitin"
-};
-
-function setName(name) {
-  user.name = name;
+          a: `<p>An idempotent function is a function that, when applied repeatedly to its own result, produces no further change after the first application.</p>
+<pre><code>function toUpper(text) {
+  return text.toUpperCase();
 }
 
-setName("Rahul");
-setName("Rahul");
-setName("Rahul");
+console.log(toUpper("hello")); // "HELLO"
+console.log(toUpper("HELLO")); // "HELLO"
 
-// Final result is still:
-console.log(user.name); // Rahul</code></pre>
-<p>Calling <code>setName("Rahul")</code> repeatedly produces the same final state.</p>`,
+console.log(toUpper(toUpper("hello"))); // "HELLO"</code></pre>
+<p>Once the string is uppercase, converting it to uppercase again has no effect.</p>
+<p><strong>Example: Remove duplicate values from an array</strong></p>
+<pre><code>function removeDuplicates(arr) {
+  return [...new Set(arr)];
+}
+
+console.log(removeDuplicates([1, 2, 2, 3]));
+// [1, 2, 3]
+
+console.log(removeDuplicates([1, 2, 3]));
+// [1, 2, 3]
+
+// Apply it twice
+console.log(removeDuplicates(removeDuplicates([1, 2, 2, 3])));
+// [1, 2, 3]</code></pre>
+<p>After duplicates are removed, applying the operation again doesn't change the array's contents. This function returns a new array each time; idempotence here concerns the resulting values, not array reference identity.</p>`,
         },
         {
           id: "js-pure-vs-idempotent",
@@ -2110,7 +2119,19 @@ console.log(user.name); // Rahul</code></pre>
         {
           id: "js-function-composition",
           q: "What is Function Composition?",
-          a: `<p>Function composition is the process of combining multiple functions so that the output of one function becomes the input of another function.</p>`,
+          a: `<p>Function composition is the process of combining multiple functions so that the output of one function becomes the input of another function.</p>
+<pre><code>function double(num) {
+  return num * 2;
+}
+
+function addTen(num) {
+  return num + 10;
+}
+
+const result = addTen(double(5));
+
+console.log(result); // 20</code></pre>
+<p><code>double(5)</code> returns <code>10</code>, and that result is passed into <code>addTen</code>, which returns <code>20</code>.</p>`,
         },
         {
           id: "js-recursion",
