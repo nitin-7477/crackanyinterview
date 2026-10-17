@@ -273,7 +273,7 @@ function relatedness(current, other) {
   return shared;
 }
 
-export const QUIZ_BANK_VERSION = 37;
+export const QUIZ_BANK_VERSION = 38;
 
 const DAY_QUIZ_ORDER = {
   1: [
@@ -463,6 +463,28 @@ const DAY_QUIZ_ORDER = {
     "js-async-error-handling-ways",
     "js-allsettled-failed-api",
     "js-await-not-blocking",
+  ],
+  9: [
+    "js-dom",
+    "js-events",
+    "js-event-listener",
+    "js-remove-listeners",
+    "js-event-delegation",
+    "js-settimeout",
+    "js-setinterval",
+    "js-cleartimeout",
+    "js-clearinterval",
+    "js-request-animation-frame",
+    "js-debounce",
+    "js-throttle",
+    "js-event-queue",
+    "js-event-vs-microtask-queue",
+    "js-queue-microtask",
+    "js-event-loop",
+    "js-microtasks-macrotasks",
+    "js-mutation-observer",
+    "js-abort-controller",
+    "js-window-vs-document",
   ],
 };
 
@@ -1304,6 +1326,206 @@ const QUIZ_BANK = {
       "Because `await` suspends the current async function and lets the event loop process other work while the awaited operation settles",
       "Because Promises always resolve instantly",
       "Because JavaScript stops processing all other code until the Promise settles",
+    ],
+    correct: 1,
+  },
+  "js-dom": {
+    q: "What is the DOM (Document Object Model)?",
+    options: [
+      "A JavaScript library for making API requests",
+      "A programming language used to style websites",
+      "A tree-like representation of an HTML document that JavaScript can access and modify",
+      "A database that stores website passwords",
+    ],
+    correct: 2,
+  },
+  "js-events": {
+    q: "What are events in JavaScript?",
+    options: [
+      "Actions or occurrences, such as clicks, key presses, or page loading, that code can respond to",
+      "Only errors that happen in JavaScript",
+      "Functions that always run when a page opens",
+      "HTML elements used to style buttons",
+    ],
+    correct: 0,
+  },
+  "js-event-listener": {
+    q: "What is an event listener?",
+    options: [
+      "A variable that stores every event permanently",
+      "A method that prevents all browser events",
+      "A function that automatically removes HTML elements",
+      "A function registered to run when a particular event occurs",
+    ],
+    correct: 3,
+  },
+  "js-remove-listeners": {
+    q: "Why is it important to remove event listeners after use?",
+    options: [
+      "To make every event execute twice",
+      "To avoid unwanted repeated behavior, unnecessary work, and potential memory leaks when listeners are no longer needed",
+      "Because event listeners stop working after one click",
+      "To prevent JavaScript from accessing the DOM",
+    ],
+    correct: 1,
+  },
+  "js-event-delegation": {
+    q: "Which statement correctly describes event bubbling, capturing, and delegation?",
+    options: [
+      "Bubbling moves from parent to child; capturing moves from child to parent; delegation requires one listener per child",
+      "Bubbling and capturing mean the same thing, and delegation disables both",
+      "Capturing travels from ancestors toward the target; bubbling travels from the target toward ancestors; delegation handles descendant events using a listener on an ancestor",
+      "Event delegation works only with keyboard events",
+    ],
+    correct: 2,
+  },
+  "js-settimeout": {
+    q: "What is setTimeout() in JavaScript?",
+    options: [
+      "It executes a function repeatedly after a fixed interval.",
+      "It schedules a function to execute once after a specified delay.",
+      "It immediately stops a running function.",
+      "It pauses the entire JavaScript thread for the specified time.",
+    ],
+    correct: 1,
+  },
+  "js-setinterval": {
+    q: "What is setInterval() in JavaScript?",
+    options: [
+      "It executes a function once after a delay.",
+      "It repeatedly schedules a callback at approximately fixed intervals until stopped.",
+      "It delays all JavaScript code.",
+      "It runs a callback only when the browser repaints.",
+    ],
+    correct: 1,
+  },
+  "js-cleartimeout": {
+    q: "What is clearTimeout() used for?",
+    options: [
+      "To stop every timer in the application.",
+      "To pause a timeout and resume it later.",
+      "To cancel a pending timeout using its timer ID.",
+      "To clear the browser's localStorage.",
+    ],
+    correct: 2,
+  },
+  "js-clearinterval": {
+    q: "What is clearInterval() used for?",
+    options: [
+      "To stop a repeating interval using its timer ID.",
+      "To delay the next interval callback by one second.",
+      "To cancel all pending promises.",
+      "To remove an event listener.",
+    ],
+    correct: 0,
+  },
+  "js-request-animation-frame": {
+    q: "What is requestAnimationFrame() used for?",
+    options: [
+      "To run a callback exactly every 16 milliseconds in every situation.",
+      "To run a callback before every network request.",
+      "To schedule a callback in sync with the browser's next repaint, commonly for animations.",
+      "To repeatedly call a function until clearInterval() is used.",
+    ],
+    correct: 2,
+  },
+  "js-debounce": {
+    q: "What is debouncing in JavaScript?",
+    options: [
+      "Calling a function repeatedly at a fixed interval.",
+      "Ensuring a function runs only once when the page loads.",
+      "Delaying a function until a specified time has passed without another triggering call.",
+      "Making an asynchronous function execute synchronously.",
+    ],
+    correct: 2,
+  },
+  "js-throttle": {
+    q: "What is throttling in JavaScript?",
+    options: [
+      "Delaying a function until no new calls occur for a specified time.",
+      "Ensuring a function executes at most once during a specified time interval.",
+      "Making a function execute immediately every time it is called.",
+      "Canceling all asynchronous operations.",
+    ],
+    correct: 1,
+  },
+  "js-event-queue": {
+    q: "What is the Event Queue in JavaScript?",
+    options: [
+      "A queue that stores only synchronous JavaScript statements.",
+      "A place where browser events and scheduled callbacks can wait until they are eligible to run.",
+      "A JavaScript object that stores DOM elements.",
+      "A queue that always executes tasks immediately.",
+    ],
+    correct: 1,
+  },
+  "js-event-vs-microtask-queue": {
+    q: "What is the difference between the Event Queue and the Microtask Queue?",
+    options: [
+      "There is no difference; they are two names for the same queue.",
+      "The Event Queue contains only promises, while the Microtask Queue contains timers.",
+      "The task queue holds tasks such as timer callbacks and many event handlers; the microtask queue holds jobs such as Promise reactions and queueMicrotask callbacks, which are generally processed before the next task.",
+      "The Microtask Queue always runs after the next timer callback.",
+    ],
+    correct: 2,
+  },
+  "js-queue-microtask": {
+    q: "What does queueMicrotask() do?",
+    options: [
+      "Schedules a callback to run as a microtask after the current synchronous execution finishes and the stack clears.",
+      "Schedules a callback to run after a fixed delay, like setTimeout().",
+      "Runs a callback immediately before the current line finishes.",
+      "Repeats a callback at regular intervals.",
+    ],
+    correct: 0,
+  },
+  "js-event-loop": {
+    q: "What is the Event Loop?",
+    options: [
+      "A loop that repeatedly executes every function in a JavaScript file.",
+      "A mechanism that coordinates execution of synchronous code, queued tasks, and microtasks.",
+      "A browser API used only for animations.",
+      "A loop that makes JavaScript execute all asynchronous operations simultaneously.",
+    ],
+    correct: 1,
+  },
+  "js-microtasks-macrotasks": {
+    q: "What are Microtasks and Macrotasks (tasks)?",
+    options: [
+      "Microtasks are always slower than macrotasks.",
+      "Microtasks include Promise reactions and queueMicrotask callbacks; tasks include many timer callbacks and event handlers.",
+      "Microtasks run only on the server, while macrotasks run only in browsers.",
+      "Both are synchronous functions that execute immediately when called.",
+    ],
+    correct: 1,
+  },
+  "js-mutation-observer": {
+    q: "What is the MutationObserver API?",
+    options: [
+      "An API that observes changes to DOM nodes and can notify your callback asynchronously.",
+      "An API that tracks changes to JavaScript variables of any type.",
+      "An API that detects changes in localStorage only.",
+      "An API that automatically prevents all DOM changes.",
+    ],
+    correct: 0,
+  },
+  "js-abort-controller": {
+    q: "What is the AbortController API used for?",
+    options: [
+      "To undo any JavaScript function after it finishes.",
+      "To cancel all requests made by the browser automatically.",
+      "To signal cancellation to supported operations, such as fetch(), using an AbortSignal.",
+      "To stop the event loop.",
+    ],
+    correct: 2,
+  },
+  "js-window-vs-document": {
+    q: "What is the difference between window and document in a browser?",
+    options: [
+      "window represents the HTML page only, while document represents the entire browser tab and its timers.",
+      "window is the browser's global object in a page; document represents the page's HTML DOM.",
+      "They are exactly the same object and have the same properties.",
+      "document handles timers, while window handles only HTML elements.",
     ],
     correct: 1,
   },
