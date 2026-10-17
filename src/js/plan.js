@@ -273,7 +273,7 @@ function relatedness(current, other) {
   return shared;
 }
 
-export const QUIZ_BANK_VERSION = 35;
+export const QUIZ_BANK_VERSION = 37;
 
 const DAY_QUIZ_ORDER = {
   1: [
@@ -441,6 +441,28 @@ const DAY_QUIZ_ORDER = {
     "js-private-fields",
     "js-method-overriding",
     "js-multiple-inheritance",
+  ],
+  8: [
+    "js-sync-vs-async",
+    "js-callback-hell",
+    "js-promises",
+    "js-why-promises",
+    "js-promise-states",
+    "js-promise-chaining",
+    "js-promise-methods",
+    "js-promise-allsettled",
+    "js-promise-all",
+    "js-promise-any",
+    "js-async-await",
+    "js-promise-race",
+    "js-forget-await",
+    "js-sequential-vs-parallel",
+    "js-promises-resolve-together",
+    "js-promise-throw",
+    "js-async-error-handling",
+    "js-async-error-handling-ways",
+    "js-allsettled-failed-api",
+    "js-await-not-blocking",
   ],
 };
 
@@ -1084,6 +1106,206 @@ const QUIZ_BANK = {
       "No, JavaScript cannot reuse behavior from other objects",
     ],
     correct: 2,
+  },
+  "js-sync-vs-async": {
+    q: "What is the difference between synchronous and asynchronous code?",
+    options: [
+      "Synchronous code runs only in the browser, while asynchronous code runs only on servers",
+      "Synchronous code generally executes step by step, while asynchronous operations allow other work to proceed without waiting for them to finish",
+      "Asynchronous code always executes faster than synchronous code",
+      "There is no difference between them",
+    ],
+    correct: 1,
+  },
+  "js-callback-hell": {
+    q: "What is Callback Hell, and how can you avoid it?",
+    options: [
+      "A JavaScript syntax error caused by using arrow functions",
+      "A situation where callbacks are nested deeply, making code hard to read and maintain; Promises and `async/await` can help",
+      "An error that happens whenever a callback returns a value",
+      "A problem that occurs only when using `setTimeout()`",
+    ],
+    correct: 1,
+  },
+  "js-promises": {
+    q: "What is a Promise in JavaScript?",
+    options: [
+      "An object representing the eventual completion or failure of an asynchronous operation",
+      "A function that must execute immediately",
+      "A special type of loop",
+      "An object that can only store strings",
+    ],
+    correct: 0,
+  },
+  "js-why-promises": {
+    q: "Why do we need Promises in JavaScript?",
+    options: [
+      "To make all JavaScript code synchronous",
+      "To eliminate the need for functions",
+      "To manage asynchronous results and errors more clearly than deeply nested callbacks",
+      "To guarantee that every operation succeeds",
+    ],
+    correct: 2,
+  },
+  "js-promise-states": {
+    q: "What are the three states of a Promise?",
+    options: [
+      "Started, running, and stopped",
+      "Open, closed, and waiting",
+      "Success, failure, and cancelled",
+      "Pending, fulfilled, and rejected",
+    ],
+    correct: 3,
+  },
+  "js-promise-chaining": {
+    q: "What is Promise Chaining?",
+    options: [
+      "Calling multiple promises without waiting for any result",
+      "Using `.then()` repeatedly, where each step can use the previous step's result",
+      "Running the same promise forever",
+      "Converting a Promise into a callback",
+    ],
+    correct: 1,
+  },
+  "js-promise-methods": {
+    q: "Which option lists valid static Promise methods?",
+    options: [
+      "`Promise.all()`, `Promise.race()`, `Promise.any()`, and `Promise.allSettled()`",
+      "`Promise.then()`, `Promise.catch()`, and `Promise.finally()` only",
+      "`Promise.start()`, `Promise.stop()`, and `Promise.wait()`",
+      "`Promise.map()`, `Promise.filter()`, and `Promise.reduce()`",
+    ],
+    correct: 0,
+  },
+  "js-promise-allsettled": {
+    q: "What does `Promise.allSettled()` do?",
+    options: [
+      "Rejects immediately when any input Promise rejects",
+      "Returns only the first fulfilled result",
+      "Waits for every input Promise to settle and reports each outcome",
+      "Cancels all Promises after the first result",
+    ],
+    correct: 2,
+  },
+  "js-promise-all": {
+    q: "What happens when you use `Promise.all()` and one input Promise rejects?",
+    options: [
+      "It waits for every other Promise to finish before rejecting",
+      "It fulfills with the successful results only",
+      "It automatically retries the rejected Promise",
+      "The combined Promise rejects when an input rejects; the other operations are not automatically cancelled",
+    ],
+    correct: 3,
+  },
+  "js-promise-any": {
+    q: "How does `Promise.any()` behave?",
+    options: [
+      "It fulfills with the first fulfilled input and rejects only if all inputs reject",
+      "It fulfills only when every input fulfills",
+      "It returns the first input to settle, whether fulfilled or rejected",
+      "It waits for every input to settle and returns every result",
+    ],
+    correct: 0,
+  },
+  "js-async-await": {
+    q: "What does `async/await` actually do?",
+    options: [
+      "Makes all code run on a separate thread",
+      "Lets you write Promise-based asynchronous code in a more readable style; `await` pauses the surrounding async function until the awaited result settles",
+      "Turns every function into a synchronous function",
+      "Removes the need to handle rejected Promises",
+    ],
+    correct: 1,
+  },
+  "js-promise-race": {
+    q: "What does `Promise.race()` do?",
+    options: [
+      "Returns the first fulfilled Promise, ignoring earlier rejections",
+      "Waits for all input Promises and returns an array of results",
+      "Settles with the outcome of the first input Promise to settle, whether fulfilled or rejected",
+      "Rejects only if all input Promises reject",
+    ],
+    correct: 2,
+  },
+  "js-forget-await": {
+    q: "What happens if you forget to `await` a Promise inside an async function?",
+    options: [
+      "JavaScript automatically waits for it before moving to the next line",
+      "You generally get the Promise object immediately, and the following code continues without waiting for its result",
+      "The Promise is automatically cancelled",
+      "The async function stops executing permanently",
+    ],
+    correct: 1,
+  },
+  "js-sequential-vs-parallel": {
+    q: "What is the difference between sequential and parallel Promise execution?",
+    options: [
+      "Sequential execution waits for each operation before starting the next; parallel execution starts independent operations without waiting for each one to finish",
+      "Sequential execution always uses multiple threads; parallel execution always uses one",
+      "They are exactly the same",
+      "Parallel execution guarantees every operation finishes faster",
+    ],
+    correct: 0,
+  },
+  "js-promises-resolve-together": {
+    q: "What happens when multiple Promises fulfill around the same time inside `Promise.all()`?",
+    options: [
+      "Only the first result is returned",
+      "The results are returned in the order they finish",
+      "The results are returned in the same order as the input Promises",
+      "JavaScript throws an error because they finished together",
+    ],
+    correct: 2,
+  },
+  "js-promise-throw": {
+    q: "What happens when you throw an error inside a Promise's `.then()` handler?",
+    options: [
+      "The error is ignored automatically",
+      "The Promise chain becomes rejected, and a later `.catch()` can handle the error",
+      "The entire JavaScript application must stop",
+      "The Promise automatically retries the handler",
+    ],
+    correct: 1,
+  },
+  "js-async-error-handling": {
+    q: "How does error handling work with `async/await`?",
+    options: [
+      "Errors cannot be caught when using `await`",
+      "Every error is automatically converted to `null`",
+      "You must use `.then()` after every `await`",
+      "Use `try...catch` around awaited operations to handle rejected Promises and thrown errors",
+    ],
+    correct: 3,
+  },
+  "js-async-error-handling-ways": {
+    q: "How can you handle errors in asynchronous JavaScript?",
+    options: [
+      "Use only `console.log()`",
+      "Ignore every rejected Promise",
+      "Use `.catch()` with Promise chains or `try...catch` with `async/await`",
+      "Use `finally` alone to catch and handle every error",
+    ],
+    correct: 2,
+  },
+  "js-allsettled-failed-api": {
+    q: "How would you handle one failed API call while allowing other API calls to complete?",
+    options: [
+      "Use `Promise.allSettled()` to inspect every result, or catch failures individually",
+      "Use `Promise.all()` and assume it returns successful results after any rejection",
+      "Cancel all other requests whenever one request fails",
+      "Put every request in one `try` block and assume all requests succeed",
+    ],
+    correct: 0,
+  },
+  "js-await-not-blocking": {
+    q: "Why doesn't `await` block the JavaScript main thread?",
+    options: [
+      "Because `await` makes the CPU execute every Promise on a separate thread",
+      "Because `await` suspends the current async function and lets the event loop process other work while the awaited operation settles",
+      "Because Promises always resolve instantly",
+      "Because JavaScript stops processing all other code until the Promise settles",
+    ],
+    correct: 1,
   },
 };
 
