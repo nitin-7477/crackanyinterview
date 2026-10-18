@@ -22,8 +22,8 @@ export const javascript = {
       questions: [
         {
           id: "js-what",
-          q: "What is JavaScript?",
-          a: `<p>JavaScript is a programming language used to build interactive and dynamic applications. It is single-threaded and dynamically typed, and executes code synchronously by default. It also supports asynchronous operations using the event loop, callbacks, and Promises.</p>`,
+          q: "What is JavaScript, and what are its main features?",
+          a: `<p>JavaScript is a programming language used to build interactive and dynamic applications. It is single-threaded and dynamically typed, and it executes code synchronously by default. It also supports asynchronous operations using callbacks, Promises, and async/await. JavaScript supports different programming styles, such as object-oriented and functional programming, and can run in different environments, such as browsers, Node.js, and React Native.</p>`,
         },
         {
           id: "js-features",

@@ -490,7 +490,7 @@ const DAY_QUIZ_ORDER = {
 
 const QUIZ_BANK = {
   "js-what": {
-    q: "What is JavaScript?",
+    q: "What is JavaScript, and what are its main features?",
     options: [
       "A dynamically typed, single-threaded programming language used to build interactive and dynamic applications.",
       "A statically typed language used mainly for database management.",
