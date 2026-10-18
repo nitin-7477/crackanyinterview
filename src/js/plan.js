@@ -136,7 +136,6 @@ const LATER_DAY_IDS = [DAY_SIX_IDS, DAY_SEVEN_IDS, DAY_EIGHT_IDS, DAY_NINE_IDS, 
 
 const DAY_ONE_IDS = [
   "js-what",
-  "js-features",
   "js-es6",
   "js-variable",
   "js-declare-init-assign",
@@ -155,6 +154,7 @@ const DAY_ONE_IDS = [
   "js-unary-operator",
   "js-double-bang",
   "js-explicit-implicit",
+  "js-break-continue",
 ];
 
 function readingOrder(questions) {
@@ -273,12 +273,12 @@ function relatedness(current, other) {
   return shared;
 }
 
-export const QUIZ_BANK_VERSION = 38;
+export const QUIZ_BANK_VERSION = 39;
 
 const DAY_QUIZ_ORDER = {
   1: [
     "js-what",
-    "js-features",
+    "js-break-continue",
     "js-quiz-async-feature",
     "js-es6",
     "js-quiz-es6-feature",
@@ -499,13 +499,13 @@ const QUIZ_BANK = {
     ],
     correct: 0,
   },
-  "js-features": {
-    q: "What are the features of JavaScript?",
+  "js-break-continue": {
+    q: "What is the difference between break and continue in JavaScript?",
     options: [
-      "Dynamically typed, single-threaded, object-based, event-driven, and supports asynchronous programming.",
-      "Statically typed, multi-threaded, and designed only for system programming.",
-      "Markup-based, statically typed, and used only for styling web pages.",
-      "Database-oriented, compiled-only, and unable to handle asynchronous operations.",
+      "break exits the loop immediately, while continue skips the current iteration and moves to the next one.",
+      "break skips the current iteration, while continue exits the loop immediately.",
+      "break and continue both stop the loop and exit the function.",
+      "continue ends the program, while break pauses the loop until the next event.",
     ],
     correct: 0,
   },

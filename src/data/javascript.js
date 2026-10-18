@@ -26,9 +26,9 @@ export const javascript = {
           a: `<p>JavaScript is a programming language used to build interactive and dynamic applications. It is single-threaded and dynamically typed, and it executes code synchronously by default. It also supports asynchronous operations using callbacks, Promises, and async/await. JavaScript supports different programming styles, such as object-oriented and functional programming, and can run in different environments, such as browsers, Node.js, and React Native.</p>`,
         },
         {
-          id: "js-features",
-          q: "What are the features of JavaScript?",
-          a: `<p>JavaScript is a flexible and easy-to-use programming language that is mainly used to add logic and interactivity to applications. It is dynamically typed and single-threaded, but it also supports asynchronous operations. It supports different programming styles like object-oriented and functional programming. Another important feature is that it can run in different environments, such as browsers, Node.js, and React Native.</p>`,
+          id: "js-break-continue",
+          q: "What is the difference between break and continue in JavaScript?",
+          a: `<p><code>break</code> is used to exit a loop immediately, while <code>continue</code> skips the current iteration and moves to the next one. Both are used to control the execution of loops.</p>`,
         },
         {
           id: "js-es6",
