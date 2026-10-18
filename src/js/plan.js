@@ -2800,6 +2800,22 @@ export function emptyPlan() {
   return { selectedDay: 1, read: {}, results: {}, activeQuiz: null };
 }
 
+export const REACT_PLAN_TOPIC = "react";
+export const REACT_PLAN_DAYS = 10;
+export const REACT_PER_DAY = 25;
+
+export function questionsForDay(questions, day, perDay) {
+  const start = (day - 1) * perDay;
+  return questions.slice(start, start + perDay);
+}
+
+export function readDayUnlocked(day, read, questions, perDay) {
+  if (day <= 1) return true;
+  const previous = questionsForDay(questions, day - 1, perDay);
+  const done = new Set(read?.[day - 1] || []);
+  return previous.length > 0 && previous.every((item) => done.has(item.id));
+}
+
 function shuffle(list) {
   const copy = [...list];
   for (let index = copy.length - 1; index > 0; index -= 1) {
