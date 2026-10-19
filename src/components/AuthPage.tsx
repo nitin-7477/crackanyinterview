@@ -1,6 +1,9 @@
+"use client";
+
 import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { AppHeader } from "../components/AppHeader.jsx";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { AppHeader } from "./AppHeader";
 import { useAuth } from "../context/AuthContext.jsx";
 
 const COPY = {
@@ -38,7 +41,7 @@ function LockIcon() {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>;
 }
 
-function EyeIcon({ off }) {
+function EyeIcon({ off }: { off: boolean }) {
   return off ? (
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18" /><path d="M10.6 10.6A2 2 0 0 0 12 14a2 2 0 0 0 1.4-.6" /><path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c5 0 9.3 3.1 11 7-1 2.2-2.7 4.1-4.8 5.4" /><path d="M6.1 6.1C4.2 7.4 2.7 9.2 2 11c1.2 2.7 3.6 5 6.6 6.2" /></svg>
   ) : (
@@ -46,22 +49,16 @@ function EyeIcon({ off }) {
   );
 }
 
-export function AuthPage({ mode }) {
+export function AuthPage({ mode, initialNotice }: { mode: "login" | "signup" | "forgot"; initialNotice?: string }) {
   const auth = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [notice, setNotice] = useState(location.state?.notice || "");
-  const [tone, setTone] = useState(location.state?.notice ? "success" : "");
+  const router = useRouter();
+  const [notice, setNotice] = useState(initialNotice || "");
+  const [tone, setTone] = useState(initialNotice ? "success" : "");
   const [show, setShow] = useState(false);
 
-  useEffect(() => {
-    if (!location.state?.notice) return;
-    setNotice(location.state.notice);
-    setTone("success");
-  }, [location.state]);
   const copy = COPY[mode];
 
-  async function onSubmit(event) {
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const payload = {
@@ -70,16 +67,38 @@ export function AuthPage({ mode }) {
       password: String(data.get("password") || ""),
       confirm: String(data.get("confirm") || ""),
     };
+
     if (mode === "signup") {
+      // Try backend API first, fallback to context
+      try {
+        const res = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          // If server error or DB not connected, fallback to local auth
+          if (res.status === 409 || (res.status === 400 && json.error)) {
+            setNotice(json.error);
+            setTone("error");
+            return;
+          }
+        }
+      } catch {
+        // DB not running or network error: fallback to client-side auth
+      }
+
       const result = await auth.signup(payload);
       if (result.error) {
         setNotice(result.error);
         setTone("error");
         return;
       }
-      navigate("/login", { state: { notice: "Account created. Log in to continue." } });
+      router.push("/login?notice=Account+created.+Log+in+to+continue.");
       return;
     }
+
     if (mode === "forgot") {
       const result = await auth.resetPassword(payload);
       if (result.error) {
@@ -87,16 +106,36 @@ export function AuthPage({ mode }) {
         setTone("error");
         return;
       }
-      navigate("/login", { state: { notice: "Password updated. Log in with the new password." } });
+      router.push("/login?notice=Password+updated.+Log+in+with+new+password.");
       return;
     }
+
+    // Login mode: try backend API first
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.user) {
+          auth.login({ email: payload.email, password: payload.password });
+          router.push("/dashboard");
+          return;
+        }
+      }
+    } catch {
+      // Fallback to local auth
+    }
+
     const result = await auth.login(payload);
     if (result.error) {
       setNotice(result.error);
       setTone("error");
       return;
     }
-    navigate("/dashboard");
+    router.push("/dashboard");
   }
 
   return (
@@ -181,9 +220,9 @@ export function AuthPage({ mode }) {
                 </span>
               </label>
             ) : null}
-            {mode === "login" ? <div className="auth-row"><Link to="/forgot">Forgot password?</Link></div> : null}
+            {mode === "login" ? <div className="auth-row"><Link href="/forgot">Forgot password?</Link></div> : null}
             <button className="auth-submit" type="submit">{copy.submit}</button>
-            <p className="auth-switch">{copy.before} <Link to={copy.to}>{copy.action}</Link></p>
+            <p className="auth-switch">{copy.before} <Link href={copy.to}>{copy.action}</Link></p>
           </form>
         </div>
       </section>

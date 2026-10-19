@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef } from "react";
 import { escapeHtml, highlightJs, wrapCodeBlocks } from "../lib/html.js";
 

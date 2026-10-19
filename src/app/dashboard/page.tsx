@@ -1,13 +1,26 @@
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
-import { useStudy } from "../context/StudyContext.jsx";
-import { Icon } from "../components/Icons.jsx";
-import { activityLabel, catalogStats, continueTarget, timeAgo, todayItems } from "../lib/catalog.js";
+"use client";
 
-export function DashboardPage() {
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext.jsx";
+import { useStudy } from "@/context/StudyContext.jsx";
+import { Icon } from "@/components/Icons.jsx";
+import { HomeLayout } from "@/components/HomeLayout";
+import { activityLabel, catalogStats, continueTarget, timeAgo, todayItems } from "@/lib/catalog.js";
+
+export default function DashboardPage() {
   const { account } = useAuth();
   const { state } = useStudy();
-  const navigate = useNavigate();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!account) {
+      router.replace("/login");
+    }
+  }, [account, router]);
+
+  if (!account) return null;
+
   const stats = catalogStats(state);
   const next = continueTarget(state);
   const plan = todayItems(state);
@@ -15,19 +28,19 @@ export function DashboardPage() {
   const offset = circumference * (1 - stats.pct / 100);
   const dateLabel = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   const activity = state.activity.slice(0, 5);
-  const recent = [];
+  const recent: any[] = [];
   for (const item of state.activity) {
     if (recent.some((entry) => entry.topicId === item.topicId && entry.title === item.title)) continue;
     recent.push(item);
     if (recent.length === 4) break;
   }
 
-  function open(path, extra) {
-    navigate(path, { state: extra });
+  function open(path: string, extra?: any) {
+    router.push(path);
   }
 
   return (
-    <>
+    <HomeLayout>
       <p className="home-kicker">Welcome back,</p>
       <h1>{account?.name} 👋</h1>
       <p className="home-lead">Consistent practice today builds a stronger you tomorrow.</p>
@@ -57,27 +70,27 @@ export function DashboardPage() {
             <circle cx="40" cy="28" r="8" fill="#310d20" />
           </svg>
           <h2>Small steps. Big results.</h2>
-          <p>Keep going! You're {stats.pct}% through your preparation. Focus on consistency and you'll get there.</p>
+          <p>Keep going! You&apos;re {stats.pct}% through your preparation. Focus on consistency and you&apos;ll get there.</p>
           <button type="button" className="dash-go" onClick={() => open(next.path, { focus: next.focus, quiz: next.quiz })}>Continue Learning →</button>
         </section>
         <section className="dash-card">
-          <div className="dash-card-head"><h2>Today's Plan</h2><p>{dateLabel}</p></div>
-          {plan.map((item) => (
+          <div className="dash-card-head"><h2>Today&apos;s Plan</h2><p>{dateLabel}</p></div>
+          {plan.map((item: any) => (
             <button type="button" className="plan-item" key={item.title} onClick={() => open(item.path, { quiz: item.quiz })}>
               <span className={`check ${item.done ? "" : "is-open"}`}>{item.done ? "✓" : ""}</span>
               <span><strong>{item.title}</strong><small>{item.detail}</small></span>
             </button>
           ))}
-          <button type="button" className="dash-link" onClick={() => navigate("/progress")}>View full plan →</button>
+          <button type="button" className="dash-link" onClick={() => router.push("/progress")}>View full plan →</button>
         </section>
       </div>
       <div className="dash-split">
         <section className="dash-card">
-          <div className="dash-card-head"><h2>Subject-wise Progress</h2><button type="button" className="dash-link" onClick={() => navigate("/progress")}>View all →</button></div>
-          {stats.rows.map((row) => {
+          <div className="dash-card-head"><h2>Subject-wise Progress</h2><button type="button" className="dash-link" onClick={() => router.push("/progress")}>View all →</button></div>
+          {stats.rows.map((row: any) => {
             const pct = row.total ? Math.round((row.done / row.total) * 100) : 0;
             return (
-              <button type="button" className="subject-row" key={row.topic.id} onClick={() => navigate(`/${row.topic.id}`)}>
+              <button type="button" className="subject-row" key={row.topic.id} onClick={() => router.push(`/${row.topic.id}`)}>
                 <span className="subject-ico"><Icon name={row.topic.id} /></span>
                 <strong>{row.topic.title}</strong>
                 <span className="meter" aria-hidden="true"><span style={{ width: `${pct}%` }} /></span>
@@ -87,9 +100,9 @@ export function DashboardPage() {
           })}
         </section>
         <section className="dash-card">
-          <div className="dash-card-head"><h2>Recent Activity</h2><button type="button" className="dash-link" onClick={() => navigate("/progress")}>View all →</button></div>
-          {activity.length ? activity.map((item) => (
-            <button type="button" className="activity-item" key={item.id || `${item.at}-${item.title}`} onClick={() => navigate(`/${item.topicId}`, { state: { focus: item.questionId } })}>
+          <div className="dash-card-head"><h2>Recent Activity</h2><button type="button" className="dash-link" onClick={() => router.push("/progress")}>View all →</button></div>
+          {activity.length ? activity.map((item: any) => (
+            <button type="button" className="activity-item" key={item.id || `${item.at}-${item.title}`} onClick={() => router.push(`/${item.topicId}`)}>
               <span className="activity-ico"><Icon name={item.topicId} /></span>
               <span><strong>{activityLabel(item.kind)}: {item.title}</strong><small>{timeAgo(item.at)}</small></span>
             </button>
@@ -101,11 +114,11 @@ export function DashboardPage() {
           <div className="dash-card-head"><h2>Recently Practiced</h2></div>
           {recent.length ? (
             <div className="recent-row">
-              {recent.map((item) => (
-                <button type="button" className="recent-card" key={`${item.at}-${item.title}`} onClick={() => navigate(`/${item.topicId}`, { state: { focus: item.questionId } })}>
+              {recent.map((item: any) => (
+                <button type="button" className="recent-card" key={`${item.at}-${item.title}`} onClick={() => router.push(`/${item.topicId}`)}>
                   <span className="recent-ico"><Icon name={item.topicId} /></span>
                   <strong>{item.title}</strong>
-                  <small>{stats.rows.find((row) => row.topic.id === item.topicId)?.topic.title}</small>
+                  <small>{stats.rows.find((row: any) => row.topic.id === item.topicId)?.topic.title}</small>
                 </button>
               ))}
             </div>
@@ -117,6 +130,6 @@ export function DashboardPage() {
           <p className="home-lead">Your goal: {state.goal}</p>
         </section>
       </div>
-    </>
+    </HomeLayout>
   );
 }

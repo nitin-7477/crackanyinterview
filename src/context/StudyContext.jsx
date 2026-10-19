@@ -1,3 +1,5 @@
+"use client";
+
 import { createContext, useContext, useEffect, useMemo, useReducer } from "react";
 import { buildQuizItems, emptyPlan, quizMatchesBank, QUIZ_BANK_VERSION } from "../js/plan.js";
 import {
@@ -15,6 +17,7 @@ import {
 const StudyContext = createContext(null);
 
 function loadJson(key, fallback) {
+  if (typeof window === "undefined") return fallback;
   try {
     const parsed = JSON.parse(localStorage.getItem(key) || "");
     return parsed ?? fallback;
@@ -49,7 +52,7 @@ function initialState() {
     visits: loadJson(VISIT_KEY, {}),
     activity: loadJson(ACTIVITY_KEY, []),
     bookmarks: loadJson(BOOKMARK_KEY, []),
-    goal: localStorage.getItem(GOAL_KEY) || "Land your dream job",
+    goal: (typeof window !== "undefined" ? localStorage.getItem(GOAL_KEY) : null) || "Land your dream job",
   };
 }
 
