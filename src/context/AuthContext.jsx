@@ -1,3 +1,5 @@
+"use client";
+
 import { createContext, useContext, useMemo, useState } from "react";
 import { clearSession, hashPassword, loadAccounts, loadSession, nameFromEmail, saveAccounts, saveSession } from "../lib/auth.js";
 

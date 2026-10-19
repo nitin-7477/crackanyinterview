@@ -1,11 +1,13 @@
+"use client";
+
 import { useEffect, useMemo, useState } from "react";
-import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
-import { AppHeader } from "../components/AppHeader.jsx";
-import { HtmlBlock, QuizPrompt, answerHtml } from "../components/HtmlBlock.jsx";
-import { TopicBadge, TopicIcon } from "../components/Icons.jsx";
+import { useRouter, useSearchParams } from "next/navigation";
+import { AppHeader } from "./AppHeader";
+import { HtmlBlock, QuizPrompt, answerHtml } from "./HtmlBlock.jsx";
+import { TopicBadge, TopicIcon } from "./Icons.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useStudy } from "../context/StudyContext.jsx";
-import { quizMatchesBank } from "../js/plan.js";
+import { quizMatchesBank } from "../lib/plan.js";
 import {
   PASS_SCORE,
   PLAN_DAYS,
@@ -29,9 +31,9 @@ import {
   withNotes,
 } from "../lib/catalog.js";
 
-const LEVELS = { basic: "Beginner", intermediate: "Intermediate", advanced: "Advanced" };
+const LEVELS: Record<string, string> = { basic: "Beginner", intermediate: "Intermediate", advanced: "Advanced" };
 
-function DaySwitch({ total, current, unlocked, complete, onPick }) {
+function DaySwitch({ total, current, unlocked, complete, onPick }: any) {
   return (
     <div className="day-switch" aria-label="Days">
       {Array.from({ length: total }, (_, index) => {
@@ -49,7 +51,7 @@ function DaySwitch({ total, current, unlocked, complete, onPick }) {
   );
 }
 
-function TipBanner({ children }) {
+function TipBanner({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(true);
   if (!open) return null;
   return (
@@ -84,7 +86,7 @@ function HeroArt() {
   );
 }
 
-function Bookmark({ id, on, onToggle }) {
+function Bookmark({ id, on, onToggle }: any) {
   return (
     <button type="button" className={`bookmark-btn${on ? " is-on" : ""}`} aria-label={on ? "Remove bookmark" : "Bookmark"} onClick={() => onToggle(id)}>
       {on ? "★" : "☆"}
@@ -92,16 +94,24 @@ function Bookmark({ id, on, onToggle }) {
   );
 }
 
-export function TopicPage() {
-  const { topicId, day: dayParam } = useParams();
+export function TopicView({ topicId, dayParam }: { topicId: string; dayParam?: string }) {
   const topic = topicById(topicId);
-  const location = useLocation();
-  const navigate = useNavigate();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const focusParam = searchParams.get("focus") || "";
+  const quizParam = searchParams.get("quiz") === "true";
+
   const { account, logout } = useAuth();
   const { state, dispatch } = useStudy();
-  const [activeId, setActiveId] = useState(location.state?.focus || "");
+  const [activeId, setActiveId] = useState(focusParam);
   const [quizIndex, setQuizIndex] = useState(0);
-  const [editor, setEditor] = useState(null);
+  const [editor, setEditor] = useState<any>(null);
+
+  useEffect(() => {
+    if (!account) {
+      router.replace("/login");
+    }
+  }, [account, router]);
 
   const jsDay = topicId === PLAN_TOPIC ? resolvedJsDay(state.plan, dayParam) : 1;
   const readDay = READ_PLANS[topicId] ? resolvedReadDay(topicId, state.readPlans[topicId], dayParam) : 1;
@@ -109,14 +119,14 @@ export function TopicPage() {
   useEffect(() => {
     if (!topic) return;
     if (topicId === PLAN_TOPIC && String(jsDay) !== String(dayParam || "")) {
-      navigate(`/javascript/day/${jsDay}`, { replace: true });
+      router.replace(`/javascript/day/${jsDay}`);
     }
     if (READ_PLANS[topicId] && String(readDay) !== String(dayParam || "")) {
-      navigate(`/${topicId}/day/${readDay}`, { replace: true });
+      router.replace(`/${topicId}/day/${readDay}`);
     }
     if (topicId === PLAN_TOPIC) dispatch({ type: "select-js-day", day: jsDay });
     if (READ_PLANS[topicId]) dispatch({ type: "select-read-day", topicId, day: readDay });
-  }, [topic, topicId, dayParam, jsDay, readDay, navigate, dispatch]);
+  }, [topic, topicId, dayParam, jsDay, readDay, router, dispatch]);
 
   const jsQuestions = useMemo(() => planQuestionList(), []);
   const today = topicId === PLAN_TOPIC
@@ -127,49 +137,51 @@ export function TopicPage() {
 
   useEffect(() => {
     if (!today.length) return;
-    if (!today.some((item) => item.id === activeId)) setActiveId(today[0].id);
+    if (!today.some((item: any) => item.id === activeId)) setActiveId(today[0].id);
   }, [today, activeId]);
 
   useEffect(() => {
-    if (!location.state?.focus) return;
-    setActiveId(location.state.focus);
-    const node = document.getElementById(`q-${location.state.focus}`);
+    if (!focusParam) return;
+    setActiveId(focusParam);
+    const node = document.getElementById(`q-${focusParam}`);
     node?.scrollIntoView({ block: "start" });
-  }, [location.state]);
+  }, [focusParam]);
 
   useEffect(() => {
     if (topicId !== "strings" && topicId !== "output") return;
-    const current = today.find((item) => item.id === activeId);
+    const current = today.find((item: any) => item.id === activeId);
     if (!current) return;
-    dispatch({ type: "visit", topicId, id: current.id, title: current.q, detail: topic.title });
+    dispatch({ type: "visit", topicId, id: current.id, title: current.q, detail: topic?.title });
   }, [topicId, activeId, today, dispatch, topic]);
 
   useEffect(() => {
-    if (topicId !== PLAN_TOPIC || !location.state?.quiz) return;
+    if (topicId !== PLAN_TOPIC || !quizParam) return;
     const read = new Set(state.plan.read[jsDay] || []);
-    if (!today.length || !today.every((item) => read.has(item.id))) return;
+    if (!today.length || !today.every((item: any) => read.has(item.id))) return;
     if (state.plan.activeQuiz?.day === jsDay) return;
     dispatch({ type: "start-quiz", day: jsDay });
-    navigate(location.pathname, { replace: true, state: {} });
-  }, [topicId, location, today, jsDay, state.plan, dispatch, navigate]);
+  }, [topicId, quizParam, today, jsDay, state.plan, dispatch]);
 
-  if (!topic) return <Navigate to="/dashboard" replace />;
+  if (!topic) {
+    router.replace("/dashboard");
+    return null;
+  }
 
   const bookmarked = new Set(state.bookmarks);
   const quiz = topicId === PLAN_TOPIC && state.plan.activeQuiz?.day === jsDay && quizMatchesBank(state.plan.activeQuiz)
     ? state.plan.activeQuiz
     : null;
 
-  function toggleBookmark(id) {
+  function toggleBookmark(id: string) {
     dispatch({ type: "bookmark", id });
   }
 
   return (
     <>
-      <AppHeader account={account} topicId={topicId} onLogout={() => { logout(); navigate("/login"); }} />
+      <AppHeader account={account} topicId={topicId} onLogout={() => { logout(); router.push("/login"); }} />
       <div className="app-body">
         <aside className="sidebar">
-          <button type="button" className="back-btn" aria-label="Dashboard" onClick={() => navigate("/dashboard")}>‹</button>
+          <button type="button" className="back-btn" aria-label="Dashboard" onClick={() => router.push("/dashboard")}>‹</button>
           <Sidebar
             topic={topic}
             topicId={topicId}
@@ -180,12 +192,12 @@ export function TopicPage() {
             quiz={quiz}
             quizIndex={quizIndex}
             state={state}
-            onSelect={(id, index) => {
+            onSelect={(id: string, index: number) => {
               setActiveId(id);
               if (Number.isInteger(index)) setQuizIndex(index);
               document.getElementById(Number.isInteger(index) ? `quiz-q-${index}` : `q-${id}`)?.scrollIntoView({ block: "start" });
             }}
-            onDay={(day) => navigate(topicId === PLAN_TOPIC ? `/javascript/day/${day}` : `/${topicId}/day/${day}`)}
+            onDay={(day: number) => router.push(topicId === PLAN_TOPIC ? `/javascript/day/${day}` : `/${topicId}/day/${day}`)}
           />
         </aside>
         <main className="lesson">
@@ -200,15 +212,15 @@ export function TopicPage() {
             state={state}
             bookmarked={bookmarked}
             onBookmark={toggleBookmark}
-            onComplete={(id, title) => {
+            onComplete={(id: string, title: string) => {
               if (topicId === PLAN_TOPIC) dispatch({ type: "toggle-js-read", day: jsDay, id, title });
               else dispatch({ type: "toggle-read", topicId, day: readDay, id, title, detail: topic.title });
             }}
             onStartQuiz={() => dispatch({ type: "start-quiz", day: jsDay })}
-            onChoice={(questionIndex, optionIndex) => dispatch({ type: "pick-choice", questionIndex, optionIndex })}
-            onNext={() => navigate(topicId === PLAN_TOPIC ? `/javascript/day/${jsDay + 1}` : `/${topicId}/day/${readDay + 1}`)}
-            onEdit={(item) => setEditor(item)}
-            onDelete={(id) => dispatch({ type: "delete-note", id })}
+            onChoice={(questionIndex: number, optionIndex: number) => dispatch({ type: "pick-choice", questionIndex, optionIndex })}
+            onNext={() => router.push(topicId === PLAN_TOPIC ? `/javascript/day/${jsDay + 1}` : `/${topicId}/day/${readDay + 1}`)}
+            onEdit={(item: any) => setEditor(item)}
+            onDelete={(id: string) => dispatch({ type: "delete-note", id })}
           />
         </main>
       </div>
@@ -250,15 +262,15 @@ export function TopicPage() {
   );
 }
 
-function Sidebar({ topic, topicId, jsDay, readDay, today, activeId, quiz, quizIndex, state, onSelect, onDay }) {
+function Sidebar({ topic, topicId, jsDay, readDay, today, activeId, quiz, quizIndex, state, onSelect, onDay }: any) {
   if (topicId === PLAN_TOPIC) return <JsSidebar day={jsDay} today={today} activeId={activeId} quiz={quiz} quizIndex={quizIndex} state={state} onSelect={onSelect} onDay={onDay} />;
   if (READ_PLANS[topicId]) return <ReadSidebar topicId={topicId} title={topic.title} day={readDay} today={today} activeId={activeId} state={state} onSelect={onSelect} onDay={onDay} />;
-  const index = Math.max(0, today.findIndex((item) => item.id === activeId));
+  const index = Math.max(0, today.findIndex((item: any) => item.id === activeId));
   const pct = today.length ? Math.round((index / today.length) * 100) : 0;
-  const remaining = today.slice(index).reduce((sum, item) => sum + minutes(item), 0);
+  const remaining = today.slice(index).reduce((sum: number, item: any) => sum + minutes(item), 0);
   return (
     <>
-      <div className="step-dots">{today.map((item, i) => <span key={item.id} className={i <= index ? "is-on" : ""} />)}</div>
+      <div className="step-dots">{today.map((item: any, i: number) => <span key={item.id} className={i <= index ? "is-on" : ""} />)}</div>
       <div className="module-card">
         <div className="module-title"><TopicBadge id={topicId} /><div><h2>{topic.title}</h2><p>{topic.heading}</p></div></div>
         <p className="module-kicker">{index} / {today.length} topics</p>
@@ -267,7 +279,7 @@ function Sidebar({ topic, topicId, jsDay, readDay, today, activeId, quiz, quizIn
       </div>
       <p className="topics-label">Topics</p>
       <nav className="sidebar-nav">
-        {today.map((item, i) => (
+        {today.map((item: any, i: number) => (
           <button type="button" key={item.id} className={`side-item${item.id === activeId ? " is-active" : ""}`} onClick={() => onSelect(item.id)}>
             <TopicIcon index={i} />
             <span className="side-copy"><strong>{i + 1}. {item.q}</strong><small>{minutes(item)} min</small></span>
@@ -278,12 +290,12 @@ function Sidebar({ topic, topicId, jsDay, readDay, today, activeId, quiz, quizIn
   );
 }
 
-function JsSidebar({ day, today, activeId, quiz, quizIndex, state, onSelect, onDay }) {
-  const passedDays = Object.values(state.plan.results).filter((result) => result?.passed).length;
+function JsSidebar({ day, today, activeId, quiz, quizIndex, state, onSelect, onDay }: any) {
+  const passedDays = Object.values(state.plan.results).filter((result: any) => result?.passed).length;
   const pct = Math.round((passedDays / PLAN_DAYS) * 100);
   const read = new Set(state.plan.read[day] || []);
   const done = readCount([...read], today);
-  const answered = quiz ? (quiz.picks || []).filter((pick) => Number.isInteger(pick)).length : 0;
+  const answered = quiz ? (quiz.picks || []).filter((pick: any) => Number.isInteger(pick)).length : 0;
   const correct = quiz ? (quiz.marks || []).filter(Boolean).length : 0;
   return (
     <>
@@ -299,12 +311,12 @@ function JsSidebar({ day, today, activeId, quiz, quizIndex, state, onSelect, onD
         <DaySwitch
           total={PLAN_DAYS}
           current={day}
-          unlocked={(number) => isDayUnlocked(number, state.plan.results)}
-          complete={(number) => Boolean(state.plan.results[number]?.passed)}
+          unlocked={(number: number) => isDayUnlocked(number, state.plan.results)}
+          complete={(number: number) => Boolean(state.plan.results[number]?.passed)}
           onPick={onDay}
         />
         {quiz
-          ? quiz.items.map((item, index) => {
+          ? quiz.items.map((item: any, index: number) => {
             const picked = quiz.picks?.[index];
             const status = Number.isInteger(picked) ? (quiz.marks[index] ? "Correct" : "Wrong") : "Not answered";
             return (
@@ -314,7 +326,7 @@ function JsSidebar({ day, today, activeId, quiz, quizIndex, state, onSelect, onD
               </button>
             );
           })
-          : today.map((item, index) => (
+          : today.map((item: any, index: number) => (
             <button type="button" key={item.id} className={`side-item${item.id === activeId ? " is-active" : ""}`} onClick={() => onSelect(item.id)}>
               <TopicIcon index={index} />
               <span className="side-copy"><strong>{index + 1}. {item.q}</strong><small>{read.has(item.id) ? "Complete" : item.section}</small></span>
@@ -337,7 +349,7 @@ function JsSidebar({ day, today, activeId, quiz, quizIndex, state, onSelect, onD
   );
 }
 
-function ReadSidebar({ topicId, title, day, today, activeId, state, onSelect, onDay }) {
+function ReadSidebar({ topicId, title, day, today, activeId, state, onSelect, onDay }: any) {
   const config = READ_PLANS[topicId];
   const questions = questionsOf(topicId);
   const total = readPlanDayCount(topicId);
@@ -364,11 +376,11 @@ function ReadSidebar({ topicId, title, day, today, activeId, state, onSelect, on
         <DaySwitch
           total={total}
           current={day}
-          unlocked={(number) => readDayUnlocked(number, plan.read, questions, config.perDay)}
-          complete={(number) => dayComplete(plan.read[number], questionsForDay(questions, number, config.perDay))}
+          unlocked={(number: number) => readDayUnlocked(number, plan.read, questions, config.perDay)}
+          complete={(number: number) => dayComplete(plan.read[number], questionsForDay(questions, number, config.perDay))}
           onPick={onDay}
         />
-        {today.map((item, index) => (
+        {today.map((item: any, index: number) => (
           <button type="button" key={item.id} className={`side-item${item.id === activeId ? " is-active" : ""}`} onClick={() => onSelect(item.id)}>
             <TopicIcon index={index} />
             <span className="side-copy"><strong>{(day - 1) * config.perDay + index + 1}. {item.q}</strong><small>{read.has(item.id) ? "Complete" : item.section}</small></span>
@@ -387,14 +399,14 @@ function ReadSidebar({ topicId, title, day, today, activeId, state, onSelect, on
   );
 }
 
-function Lesson({ topic, topicId, jsDay, readDay, today, activeId, quiz, state, bookmarked, onBookmark, onComplete, onStartQuiz, onNext, onChoice, onEdit, onDelete }) {
+function Lesson({ topic, topicId, jsDay, readDay, today, activeId, quiz, state, bookmarked, onBookmark, onComplete, onStartQuiz, onNext, onChoice, onEdit, onDelete }: any) {
   if (topicId === PLAN_TOPIC) {
     return <JsLesson day={jsDay} today={today} quiz={quiz} result={state.plan.results[jsDay]} readIds={state.plan.read[jsDay]} bookmarked={bookmarked} onBookmark={onBookmark} onComplete={onComplete} onStartQuiz={onStartQuiz} onNext={onNext} onChoice={onChoice} />;
   }
   if (READ_PLANS[topicId]) {
     return <ReadLesson topic={topic} day={readDay} today={today} readIds={state.readPlans[topicId].read[readDay]} bookmarked={bookmarked} onBookmark={onBookmark} onComplete={onComplete} onNext={onNext} />;
   }
-  const totalMins = today.reduce((sum, item) => sum + minutes(item), 0);
+  const totalMins = today.reduce((sum: number, item: any) => sum + minutes(item), 0);
   return (
     <>
       <header className="hero hero-card">
@@ -411,7 +423,7 @@ function Lesson({ topic, topicId, jsDay, readDay, today, activeId, quiz, state, 
       <section className="quiz">
         <div className="quiz-head"><h2>{topic.title} questions and answers</h2><span className="level-pill">Basic to Advanced</span></div>
         <div className="quiz-list">
-          {today.map((item, index) => (
+          {today.map((item: any, index: number) => (
             <article key={item.id} id={`q-${item.id}`} className={`qa${item.id === activeId ? " is-active" : ""}`}>
               <div className="qa-q">
                 <span className="badge q">{index + 1}</span>
@@ -438,15 +450,15 @@ function Lesson({ topic, topicId, jsDay, readDay, today, activeId, quiz, state, 
         </div>
       </section>
       {topic.takeaways?.length ? (
-        <section className="takeaways"><h2>Key Takeaways</h2><ul>{topic.takeaways.map((line) => <li key={line}>{line}</li>)}</ul></section>
+        <section className="takeaways"><h2>Key Takeaways</h2><ul>{topic.takeaways.map((line: string) => <li key={line}>{line}</li>)}</ul></section>
       ) : null}
     </>
   );
 }
 
-function JsLesson({ day, today, quiz, result, readIds, bookmarked, onBookmark, onComplete, onStartQuiz, onNext, onChoice }) {
+function JsLesson({ day, today, quiz, result, readIds, bookmarked, onBookmark, onComplete, onStartQuiz, onNext, onChoice }: any) {
   const read = new Set(readIds || []);
-  const ready = today.length > 0 && today.every((item) => read.has(item.id));
+  const ready = today.length > 0 && today.every((item: any) => read.has(item.id));
   return (
     <>
       <header className="hero hero-card">
@@ -467,7 +479,7 @@ function JsLesson({ day, today, quiz, result, readIds, bookmarked, onBookmark, o
             <>
               {result?.passed ? <p className="plan-note is-pass">You scored {result.score}/{result.total}. {day < PLAN_DAYS ? `Day ${day + 1} is unlocked.` : "This was the last day."}</p> : null}
               {result && !result.passed ? <p className="plan-note is-fail">You scored {result.score}/{result.total}. Score more than {PASS_SCORE} to unlock the next day.</p> : null}
-              {today.map((item, index) => (
+              {today.map((item: any, index: number) => (
                 <article key={item.id} id={`q-${item.id}`} className={`qa${read.has(item.id) ? " is-read" : ""}`}>
                   <div className="qa-q"><span className="badge q">{index + 1}</span><div><strong>{index + 1}. {item.q}</strong><span className="qa-meta">{item.section}</span></div></div>
                   <div className="qa-a"><span className="badge a">A</span><div className="answer">
@@ -480,7 +492,7 @@ function JsLesson({ day, today, quiz, result, readIds, bookmarked, onBookmark, o
                 </article>
               ))}
               <div className="plan-gate">
-                <p>{read.size > today.length ? today.length : [...read].filter((id) => today.some((item) => item.id === id)).length}/{today.length} marked as read</p>
+                <p>{read.size > today.length ? today.length : [...read].filter((id) => today.some((item: any) => item.id === id)).length}/{today.length} marked as read</p>
                 <button type="button" className="btn btn-primary" disabled={!ready} onClick={onStartQuiz}>Start practice quiz</button>
                 {ready ? null : <p className="plan-hint">Practice stays locked until all {today.length} questions are marked as read.</p>}
               </div>
@@ -492,8 +504,8 @@ function JsLesson({ day, today, quiz, result, readIds, bookmarked, onBookmark, o
   );
 }
 
-function QuizList({ quiz, passed, onChoice, onStartQuiz, onNext }) {
-  const answered = (quiz.picks || []).filter((pick) => Number.isInteger(pick)).length;
+function QuizList({ quiz, passed, onChoice, onStartQuiz, onNext }: any) {
+  const answered = (quiz.picks || []).filter((pick: any) => Number.isInteger(pick)).length;
   const correct = (quiz.marks || []).filter(Boolean).length;
   const done = answered === quiz.items.length;
   const open = passed || correct > PASS_SCORE;
@@ -507,7 +519,7 @@ function QuizList({ quiz, passed, onChoice, onStartQuiz, onNext }) {
   return (
     <>
       {gate}
-      {quiz.items.map((prompt, index) => {
+      {quiz.items.map((prompt: any, index: number) => {
         const picked = quiz.picks?.[index];
         const isAnswered = Number.isInteger(picked);
         return (
@@ -520,7 +532,7 @@ function QuizList({ quiz, passed, onChoice, onStartQuiz, onNext }) {
               </div>
             </div>
             <div className="choices">
-              {prompt.options.map((option, optionIndex) => {
+              {prompt.options.map((option: any, optionIndex: number) => {
                 let mark = "";
                 if (isAnswered && optionIndex === prompt.correct) mark = " is-correct";
                 else if (isAnswered && optionIndex === picked) mark = " is-wrong";
@@ -541,13 +553,13 @@ function QuizList({ quiz, passed, onChoice, onStartQuiz, onNext }) {
   );
 }
 
-function ReadLesson({ topic, day, today, readIds, bookmarked, onBookmark, onComplete, onNext }) {
+function ReadLesson({ topic, day, today, readIds, bookmarked, onBookmark, onComplete, onNext }: any) {
   const configDays = readPlanDayCount(topic.id);
   const perDay = READ_PLANS[topic.id].perDay;
   const read = new Set(readIds || []);
-  const done = today.every((item) => read.has(item.id));
+  const done = today.every((item: any) => read.has(item.id));
   const start = (day - 1) * perDay + 1;
-  const count = today.filter((item) => read.has(item.id)).length;
+  const count = today.filter((item: any) => read.has(item.id)).length;
   return (
     <>
       <header className="hero hero-card">
@@ -564,8 +576,8 @@ function ReadLesson({ topic, day, today, readIds, bookmarked, onBookmark, onComp
       <section className="quiz">
         <div className="quiz-head"><h2>Read deeply</h2><span className="level-pill">Read</span></div>
         <div className="quiz-list">
-          <p className={`plan-note${done ? " is-pass" : ""}`}>{done ? (day < configDays ? `All ${today.length} questions are read. Day ${day + 1} is unlocked.` : `You finished the ${configDays}-day plan.`) : `${count}/${today.length} marked as read.`}</p>
-          {today.map((item, index) => (
+          <p className={`plan-note${done ? " is-pass" : ""}`}>{done ? (day < configDays ? `All ${today.length} questions are read. Day ${day + 1} is unlocked.` : `You finished the ${configDays}-day plan.`) : `${count}/{today.length} marked as read.`}</p>
+          {today.map((item: any, index: number) => (
             <article key={item.id} id={`q-${item.id}`} className={`qa${read.has(item.id) ? " is-read" : ""}`}>
               <div className="qa-q"><span className="badge q">{start + index}</span><div><strong>{start + index}. {item.q}</strong><span className="qa-meta">{item.section}</span></div></div>
               <div className="qa-a"><span className="badge a">A</span><div className="answer">

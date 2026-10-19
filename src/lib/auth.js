@@ -2,6 +2,7 @@ const ACCOUNTS_KEY = "interview-accounts-v1";
 const SESSION_KEY = "interview-session-v1";
 
 export function loadAccounts() {
+  if (typeof window === "undefined") return [];
   try {
     const parsed = JSON.parse(localStorage.getItem(ACCOUNTS_KEY) || "[]");
     return Array.isArray(parsed) ? parsed : [];
@@ -11,10 +12,12 @@ export function loadAccounts() {
 }
 
 export function saveAccounts(accounts) {
+  if (typeof window === "undefined") return;
   localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
 }
 
 export function loadSession() {
+  if (typeof window === "undefined") return null;
   try {
     const parsed = JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
     return parsed?.email ? parsed : null;
@@ -24,10 +27,12 @@ export function loadSession() {
 }
 
 export function saveSession(email) {
+  if (typeof window === "undefined") return;
   localStorage.setItem(SESSION_KEY, JSON.stringify({ email }));
 }
 
 export function clearSession() {
+  if (typeof window === "undefined") return;
   localStorage.removeItem(SESSION_KEY);
 }
 

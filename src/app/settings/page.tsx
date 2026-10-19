@@ -1,13 +1,26 @@
-import { useState } from "react";
-import { useAuth } from "../context/AuthContext.jsx";
-import { useStudy } from "../context/StudyContext.jsx";
+"use client";
 
-export function SettingsPage() {
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext.jsx";
+import { useStudy } from "@/context/StudyContext.jsx";
+import { HomeLayout } from "@/components/HomeLayout";
+
+export default function SettingsPage() {
   const { account, rename } = useAuth();
   const { state, dispatch } = useStudy();
+  const router = useRouter();
   const [note, setNote] = useState("");
 
-  function onSubmit(event) {
+  useEffect(() => {
+    if (!account) {
+      router.replace("/login");
+    }
+  }, [account, router]);
+
+  if (!account) return null;
+
+  function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     rename(String(data.get("name") || ""));
@@ -16,7 +29,7 @@ export function SettingsPage() {
   }
 
   return (
-    <>
+    <HomeLayout>
       <p className="home-kicker">Account</p>
       <h1>Settings</h1>
       <form className="settings-form" onSubmit={onSubmit}>
@@ -26,6 +39,6 @@ export function SettingsPage() {
         <button className="dash-go" type="submit">Save</button>
       </form>
       <p className="home-lead">{note}</p>
-    </>
+    </HomeLayout>
   );
 }

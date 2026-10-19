@@ -1,5 +1,10 @@
-import { useNavigate } from "react-router-dom";
-import { useStudy } from "../context/StudyContext.jsx";
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext.jsx";
+import { useStudy } from "@/context/StudyContext.jsx";
+import { HomeLayout } from "@/components/HomeLayout";
 import {
   PLAN_DAYS,
   PLAN_TOPIC,
@@ -13,20 +18,30 @@ import {
   questionsOf,
   readDayUnlocked,
   timeAgo,
-} from "../lib/catalog.js";
+} from "@/lib/catalog.js";
 
-export function ProgressPage() {
+export default function ProgressPage() {
+  const { account } = useAuth();
   const { state } = useStudy();
-  const navigate = useNavigate();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!account) {
+      router.replace("/login");
+    }
+  }, [account, router]);
+
+  if (!account) return null;
+
   const stats = catalogStats(state);
 
   return (
-    <>
+    <HomeLayout>
       <p className="home-kicker">Tracking</p>
       <h1>Progress</h1>
       <p className="home-lead">{stats.done} of {stats.total} questions completed.</p>
       <div className="page-list">
-        {stats.rows.map((row) => {
+        {stats.rows.map((row: any) => {
           const pct = row.total ? Math.round((row.done / row.total) * 100) : 0;
           return (
             <section className="dash-card" key={row.topic.id}>
@@ -37,12 +52,12 @@ export function ProgressPage() {
                   const day = index + 1;
                   const today = dayQuestions(planQuestionList(), day);
                   const read = new Set(state.plan.read[day] || []);
-                  const count = today.filter((item) => read.has(item.id)).length;
+                  const count = today.filter((item: any) => read.has(item.id)).length;
                   const unlocked = isDayUnlocked(day, state.plan.results);
                   return (
                     <article key={day}>
                       <div><strong>Day {day}</strong><small>{count}/{today.length} read{state.plan.results[day]?.passed ? " · quiz passed" : ""}{unlocked ? "" : " · locked"}</small></div>
-                      {unlocked ? <button type="button" className="dash-link" onClick={() => navigate(`/javascript/day/${day}`)}>Open</button> : null}
+                      {unlocked ? <button type="button" className="dash-link" onClick={() => router.push(`/javascript/day/${day}`)}>Open</button> : null}
                     </article>
                   );
                 }) : null}
@@ -52,12 +67,12 @@ export function ProgressPage() {
                   const today = questionsForDay(questions, day, READ_PLANS[row.topic.id].perDay);
                   const plan = state.readPlans[row.topic.id];
                   const read = new Set(plan.read[day] || []);
-                  const count = today.filter((item) => read.has(item.id)).length;
+                  const count = today.filter((item: any) => read.has(item.id)).length;
                   const unlocked = readDayUnlocked(day, plan.read, questions, READ_PLANS[row.topic.id].perDay);
                   return (
                     <article key={day}>
                       <div><strong>Day {day}</strong><small>{count}/{today.length} read{unlocked ? "" : " · locked"}</small></div>
-                      {unlocked ? <button type="button" className="dash-link" onClick={() => navigate(`/${row.topic.id}/day/${day}`)}>Open</button> : null}
+                      {unlocked ? <button type="button" className="dash-link" onClick={() => router.push(`/${row.topic.id}/day/${day}`)}>Open</button> : null}
                     </article>
                   );
                 }) : null}
@@ -68,11 +83,11 @@ export function ProgressPage() {
       </div>
       <section className="dash-card" style={{ marginTop: 16 }}>
         <h2>Recent activity</h2>
-        {state.activity.slice(0, 12).map((item) => (
+        {state.activity.slice(0, 12).map((item: any) => (
           <article key={item.id || item.at}><div><strong>{activityLabel(item.kind)}: {item.title}</strong><small>{timeAgo(item.at)}</small></div></article>
         ))}
         {state.activity.length === 0 ? <p className="empty-note">No activity yet.</p> : null}
       </section>
-    </>
+    </HomeLayout>
   );
 }

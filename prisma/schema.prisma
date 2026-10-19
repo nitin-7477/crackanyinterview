@@ -1,0 +1,73 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String       @id @default(uuid())
+  email        String       @unique
+  name         String
+  passwordHash String
+  goal         String       @default("Land your dream job")
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  progress     Progress[]
+  bookmarks    Bookmark[]
+  activities   Activity[]
+  notes        CustomNote[]
+}
+
+model Progress {
+  id            String   @id @default(uuid())
+  userId        String
+  topicId       String
+  day           Int
+  readQuestions String[] // Array of question IDs marked as read/completed
+  quizScore     Int?
+  quizPassed    Boolean  @default(false)
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, topicId, day])
+}
+
+model Bookmark {
+  id         String   @id @default(uuid())
+  userId     String
+  questionId String
+  topicId    String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, questionId])
+}
+
+model Activity {
+  id         String   @id @default(uuid())
+  userId     String
+  kind       String   // e.g. "read", "quiz-pass", "quiz-fail", "note"
+  title      String
+  topicId    String
+  questionId String?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CustomNote {
+  id         String   @id @default(uuid())
+  userId     String
+  topicId    String
+  questionId String
+  content    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, questionId])
+}
