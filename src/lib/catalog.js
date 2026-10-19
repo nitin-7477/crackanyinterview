@@ -301,4 +301,47 @@ export function resolvedReadDay(topicId, plan, requested) {
   return Math.min(day, readPlanDayCount(topicId));
 }
 
+export function difficultyStats(state) {
+  let easyTotal = 0, easyDone = 0;
+  let medTotal = 0, medDone = 0;
+  let hardTotal = 0, hardDone = 0;
+
+  for (const topic of topics) {
+    const questions = questionsOf(topic.id);
+    const readSet = new Set();
+    if (topic.id === PLAN_TOPIC) {
+      for (const day in state?.plan?.read || {}) {
+        (state.plan.read[day] || []).forEach((id) => readSet.add(id));
+      }
+    } else if (READ_PLANS[topic.id]) {
+      const plan = state?.readPlans?.[topic.id];
+      for (const day in plan?.read || {}) {
+        (plan.read[day] || []).forEach((id) => readSet.add(id));
+      }
+    } else {
+      (state?.visits?.[topic.id] || []).forEach((id) => readSet.add(id));
+    }
+
+    for (const q of questions) {
+      const isDone = readSet.has(q.id);
+      if (q.level === "basic") {
+        easyTotal++;
+        if (isDone) easyDone++;
+      } else if (q.level === "advanced") {
+        hardTotal++;
+        if (isDone) hardDone++;
+      } else {
+        medTotal++;
+        if (isDone) medDone++;
+      }
+    }
+  }
+
+  return {
+    easy: { done: easyDone, total: easyTotal, pct: easyTotal ? Math.round((easyDone / easyTotal) * 100) : 0 },
+    medium: { done: medDone, total: medTotal, pct: medTotal ? Math.round((medDone / medTotal) * 100) : 0 },
+    hard: { done: hardDone, total: hardTotal, pct: hardTotal ? Math.round((hardDone / hardTotal) * 100) : 0 },
+  };
+}
+
 export { topics, PLAN_TOPIC, PLAN_DAYS, READ_PER_DAY, QUIZ_SIZE, PASS_SCORE, isDayUnlocked, dayQuestions, questionsForDay, readDayUnlocked };
