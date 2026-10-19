@@ -12,27 +12,33 @@ export function CAILogo({ collapsed = false, href = "/dashboard", className = ""
   return (
     <Link
       href={href}
-      className={`group flex items-center gap-2.5 transition-opacity hover:opacity-90 ${className}`}
+      className={`group flex items-center gap-2.5 transition-all ${className}`}
       aria-label="CrackAnyInterview Home"
     >
-      {/* TUF-style Monogram Badge: [ CAI ] */}
-      <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 border border-zinc-700/80 shadow-inner group-hover:border-zinc-500 transition-colors">
-        <span className="text-[12px] font-black tracking-tight text-white flex items-center">
+      {/* Unique CAI Hex / Cube Monogram */}
+      <div className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-950 border border-zinc-700/80 shadow-[0_0_15px_rgba(245,158,11,0.15)] group-hover:border-amber-500/60 group-hover:shadow-[0_0_20px_rgba(245,158,11,0.25)] transition-all">
+        {/* Monogram */}
+        <span className="font-mono text-[13px] font-black tracking-tighter text-white flex items-center">
           <span className="text-amber-400">C</span>
-          <span className="text-white">A</span>
-          <span className="text-zinc-300">I</span>
+          <span className="text-zinc-200">A</span>
+          <span className="text-amber-500">I</span>
         </span>
-        {/* Subtle top glow line */}
-        <div className="absolute top-0 inset-x-1 h-[1px] bg-gradient-to-r from-transparent via-amber-400/40 to-transparent" />
+        {/* Subtle accent dot */}
+        <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_#fbbf24]" />
       </div>
 
       {!collapsed && (
         <div className="flex flex-col leading-none">
-          <span className="text-[15px] font-bold tracking-tight text-white flex items-center gap-0.5">
-            crack<span className="text-zinc-400">any</span><span className="text-amber-400">interview</span>
-          </span>
-          <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-500 mt-0.5">
-            SDE Prep Platform
+          <div className="flex items-center gap-1.5">
+            <span className="text-[15px] font-extrabold tracking-tight text-white group-hover:text-zinc-100 transition-colors">
+              CrackAny<span className="text-amber-400">Interview</span>
+            </span>
+            <span className="rounded bg-amber-400/10 border border-amber-400/20 px-1 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-400">
+              FREE
+            </span>
+          </div>
+          <span className="text-[10px] font-medium text-zinc-400 mt-0.5">
+            Frontend & Mobile SDE Prep
           </span>
         </div>
       )}
