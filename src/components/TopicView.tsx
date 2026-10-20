@@ -383,7 +383,7 @@ function ReadSidebar({ topicId, title, day, today, activeId, state, onSelect, on
         {today.map((item: any, index: number) => (
           <button type="button" key={item.id} className={`side-item${item.id === activeId ? " is-active" : ""}`} onClick={() => onSelect(item.id)}>
             <TopicIcon index={index} />
-            <span className="side-copy"><strong>{(day - 1) * config.perDay + index + 1}. {item.q}</strong><small>{read.has(item.id) ? "Complete" : item.section}</small></span>
+            <span className="side-copy"><strong>{index + 1}. {item.q}</strong><small>{read.has(item.id) ? "Complete" : item.section}</small></span>
           </button>
         ))}
         <div className="next-day-wrap">
@@ -555,10 +555,8 @@ function QuizList({ quiz, passed, onChoice, onStartQuiz, onNext }: any) {
 
 function ReadLesson({ topic, day, today, readIds, bookmarked, onBookmark, onComplete, onNext }: any) {
   const configDays = readPlanDayCount(topic.id);
-  const perDay = READ_PLANS[topic.id].perDay;
   const read = new Set(readIds || []);
   const done = today.every((item: any) => read.has(item.id));
-  const start = (day - 1) * perDay + 1;
   const count = today.filter((item: any) => read.has(item.id)).length;
   return (
     <>
@@ -567,7 +565,7 @@ function ReadLesson({ topic, day, today, readIds, bookmarked, onBookmark, onComp
           <TopicBadge id={topic.id} />
           <p className="eyebrow">{topic.title} plan · Day {day} of {configDays}</p>
           <h1>Day {day}</h1>
-          <p className="lede">Questions {start}–{start + today.length - 1}. Mark each one complete after you have read it.</p>
+          <p className="lede">Questions 1–{today.length}. Mark each one complete after you have read it.</p>
           <div className="hero-meta"><span>{today.length} to read</span><span>{count}/{today.length} read</span><span>Day {day} of {configDays}</span></div>
         </div>
         <HeroArt />
@@ -579,7 +577,7 @@ function ReadLesson({ topic, day, today, readIds, bookmarked, onBookmark, onComp
           <p className={`plan-note${done ? " is-pass" : ""}`}>{done ? (day < configDays ? `All ${today.length} questions are read. Day ${day + 1} is unlocked.` : `You finished the ${configDays}-day plan.`) : `${count}/{today.length} marked as read.`}</p>
           {today.map((item: any, index: number) => (
             <article key={item.id} id={`q-${item.id}`} className={`qa${read.has(item.id) ? " is-read" : ""}`}>
-              <div className="qa-q"><span className="badge q">{start + index}</span><div><strong>{start + index}. {item.q}</strong><span className="qa-meta">{item.section}</span></div></div>
+              <div className="qa-q"><span className="badge q">{index + 1}</span><div><strong>{index + 1}. {item.q}</strong><span className="qa-meta">{item.section}</span></div></div>
               <div className="qa-a"><span className="badge a">A</span><div className="answer">
                 <HtmlBlock html={answerHtml(item)} />
                 <div className="plan-actions">

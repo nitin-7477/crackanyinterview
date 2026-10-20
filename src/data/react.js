@@ -98,7 +98,7 @@ export const react = {
         {
           id: "react-createroot",
           q: "What is the purpose of createRoot()?",
-          a: `<p><code>createRoot()</code> creates a React root attached to a DOM element, allowing React to render and manage the UI inside it.</p>
+          a: `<p><code>createRoot()</code> is a function provided by <code>react-dom/client</code> that creates a root for rendering React components into a DOM element.</p>
 <p><strong>Example:</strong> <code>createRoot(document.getElementById('root')).render(&lt;App /&gt;)</code> initializes the React application inside the HTML element with the ID <code>root</code>.</p>`,
         },
         {
