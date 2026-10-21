@@ -505,14 +505,13 @@ export const react = {
         {
           id: "react-usestate",
           q: "What is useState, and how does it work?",
-          a: `<p><code>useState</code> is a Hook that lets a functional component store and update state.</p>
-<pre><code>const [count, setCount] = useState(0);</code></pre>
-<p>Here, <code>count</code> holds the current value, and <code>setCount</code> updates it. When the state changes, React schedules a re-render to reflect the new value in the UI.</p>`,
+          a: `<p><code>useState</code> is a React Hook that allows functional components to store and manage state. It returns two values: the current state and a setter function used to update that state. When the state changes, React re-renders the component to display the updated value.</p>
+<pre><code>const [count, setCount] = useState(0);</code></pre>`,
         },
         {
           id: "react-useeffect",
           q: "What is useEffect, and when should you use it?",
-          a: `<p><code>useEffect</code> lets us synchronize a component with external systems, such as APIs, event listeners, timers, or subscriptions. It runs after a render has been committed to the screen, depending on its dependency array.</p>`,
+          a: `<p><code>useEffect</code> is a React Hook that lets us perform side effects in functional components, such as fetching API data, setting up event listeners, or managing timers. It runs after React renders the component. We can control when it runs using a dependency array and return a cleanup function when needed.</p>`,
         },
         {
           id: "react-useeffect-deps",
