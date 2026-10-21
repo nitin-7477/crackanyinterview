@@ -32,6 +32,7 @@ function loadJsPlan() {
   plan.read = plan.read || {};
   plan.results = plan.results || {};
   if (plan.activeQuiz && !quizMatchesBank(plan.activeQuiz)) plan.activeQuiz = null;
+  if (plan.activeQuiz && quizScore(plan.activeQuiz).done) plan.activeQuiz = null;
   return plan;
 }
 
@@ -87,7 +88,7 @@ function settle(plan, quiz) {
   return {
     plan: {
       ...plan,
-      activeQuiz: quiz,
+      activeQuiz: null,
       results: {
         ...plan.results,
         [quiz.day]: { score: kept, total: score.total, passed, at: previous?.at || Date.now() },
@@ -100,7 +101,16 @@ function settle(plan, quiz) {
 function reducer(state, action) {
   switch (action.type) {
     case "select-js-day":
-      return { ...state, plan: { ...state.plan, selectedDay: action.day } };
+      return {
+        ...state,
+        plan: {
+          ...state.plan,
+          selectedDay: action.day,
+          activeQuiz: state.plan.activeQuiz?.day === action.day ? state.plan.activeQuiz : null,
+        },
+      };
+    case "clear-quiz":
+      return { ...state, plan: { ...state.plan, activeQuiz: null } };
     case "select-read-day":
       return {
         ...state,

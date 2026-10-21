@@ -301,10 +301,32 @@ export const reactNative = {
 <p>React considers element types, positions, and keys to decide which components can be updated and which need to be replaced. React Native then applies the necessary changes to native views rather than updating a browser DOM.</p>`,
         },
         {
-          id: "rn-strict-mode",
-          q: "What is the purpose of StrictMode during development?",
-          a: `<p><code>StrictMode</code> helps identify potential bugs, such as impure rendering, missing effect cleanup, and deprecated API usage.</p>
-<p>In development, React may render components and run effect setup and cleanup an extra time to reveal problems. This extra checking is development-only and does not happen in the same way in production.</p>`,
+          id: "rn-images",
+          q: "What is the difference between Image, ImageBackground, and remote image loading?",
+          a: `<ul>
+<li><code>Image</code> displays an image from a local asset or remote URL.</li>
+<li><code>ImageBackground</code> displays an image behind other components, such as text or buttons.</li>
+<li>Remote image loading means fetching an image from a URL, which requires suitable dimensions and handling of loading or error states.</li>
+</ul>
+<p>Local image example:</p>
+<pre><code>&lt;Image
+  source={require('./assets/profile.png')}
+  style={{ width: 100, height: 100 }}
+/&gt;</code></pre>
+<p>Remote image example:</p>
+<pre><code>&lt;Image
+  source={{ uri: 'https://example.com/photo.jpg' }}
+  style={{ width: 200, height: 150 }}
+  resizeMode="cover"
+/&gt;</code></pre>
+<p>Background image example:</p>
+<pre><code>&lt;ImageBackground
+  source={require('./assets/banner.png')}
+  style={{ height: 200, justifyContent: 'center', padding: 16 }}
+&gt;
+  &lt;Text style={{ color: 'white' }}&gt;Welcome&lt;/Text&gt;
+&lt;/ImageBackground&gt;</code></pre>
+<p>For production apps, I also consider placeholders, failed requests, caching, image optimization, and accessibility labels.</p>`,
         },
         {
           id: "rn-batching",
@@ -671,32 +693,10 @@ function Form() {
 <p>For more complex forms, I usually use a carefully designed touch wrapper or a scroll container with suitable keyboard-tap settings. This avoids accidental keyboard dismissal when the user interacts with form controls.</p>`,
         },
         {
-          id: "rn-images",
-          q: "What is the difference between Image, ImageBackground, and remote image loading?",
-          a: `<ul>
-<li><code>Image</code> displays an image from a local asset or remote URL.</li>
-<li><code>ImageBackground</code> displays an image behind other components, such as text or buttons.</li>
-<li>Remote image loading means fetching an image from a URL, which requires suitable dimensions and handling of loading or error states.</li>
-</ul>
-<p>Local image example:</p>
-<pre><code>&lt;Image
-  source={require('./assets/profile.png')}
-  style={{ width: 100, height: 100 }}
-/&gt;</code></pre>
-<p>Remote image example:</p>
-<pre><code>&lt;Image
-  source={{ uri: 'https://example.com/photo.jpg' }}
-  style={{ width: 200, height: 150 }}
-  resizeMode="cover"
-/&gt;</code></pre>
-<p>Background image example:</p>
-<pre><code>&lt;ImageBackground
-  source={require('./assets/banner.png')}
-  style={{ height: 200, justifyContent: 'center', padding: 16 }}
-&gt;
-  &lt;Text style={{ color: 'white' }}&gt;Welcome&lt;/Text&gt;
-&lt;/ImageBackground&gt;</code></pre>
-<p>For production apps, I also consider placeholders, failed requests, caching, image optimization, and accessibility labels.</p>`,
+          id: "rn-strict-mode",
+          q: "What is the purpose of StrictMode during development?",
+          a: `<p><code>StrictMode</code> helps identify potential bugs, such as impure rendering, missing effect cleanup, and deprecated API usage.</p>
+<p>In development, React may render components and run effect setup and cleanup an extra time to reveal problems. This extra checking is development-only and does not happen in the same way in production.</p>`,
         },
         {
           id: "rn-refresh-infinite",

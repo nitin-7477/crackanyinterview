@@ -217,6 +217,10 @@ export function TopicView({ topicId, dayParam }: { topicId: string; dayParam?: s
               else dispatch({ type: "toggle-read", topicId, day: readDay, id, title, detail: topic.title });
             }}
             onStartQuiz={() => dispatch({ type: "start-quiz", day: jsDay })}
+            onClearQuiz={() => {
+              dispatch({ type: "clear-quiz" });
+              router.replace(`/javascript/day/${jsDay}`);
+            }}
             onChoice={(questionIndex: number, optionIndex: number) => dispatch({ type: "pick-choice", questionIndex, optionIndex })}
             onNext={() => router.push(topicId === PLAN_TOPIC ? `/javascript/day/${jsDay + 1}` : `/${topicId}/day/${readDay + 1}`)}
             onEdit={(item: any) => setEditor(item)}
@@ -399,9 +403,9 @@ function ReadSidebar({ topicId, title, day, today, activeId, state, onSelect, on
   );
 }
 
-function Lesson({ topic, topicId, jsDay, readDay, today, activeId, quiz, state, bookmarked, onBookmark, onComplete, onStartQuiz, onNext, onChoice, onEdit, onDelete }: any) {
+function Lesson({ topic, topicId, jsDay, readDay, today, activeId, quiz, state, bookmarked, onBookmark, onComplete, onStartQuiz, onClearQuiz, onNext, onChoice, onEdit, onDelete }: any) {
   if (topicId === PLAN_TOPIC) {
-    return <JsLesson day={jsDay} today={today} quiz={quiz} result={state.plan.results[jsDay]} readIds={state.plan.read[jsDay]} bookmarked={bookmarked} onBookmark={onBookmark} onComplete={onComplete} onStartQuiz={onStartQuiz} onNext={onNext} onChoice={onChoice} />;
+    return <JsLesson day={jsDay} today={today} quiz={quiz} result={state.plan.results[jsDay]} readIds={state.plan.read[jsDay]} bookmarked={bookmarked} onBookmark={onBookmark} onComplete={onComplete} onStartQuiz={onStartQuiz} onClearQuiz={onClearQuiz} onNext={onNext} onChoice={onChoice} />;
   }
   if (READ_PLANS[topicId]) {
     return <ReadLesson topic={topic} day={readDay} today={today} readIds={state.readPlans[topicId].read[readDay]} bookmarked={bookmarked} onBookmark={onBookmark} onComplete={onComplete} onNext={onNext} />;
@@ -456,7 +460,7 @@ function Lesson({ topic, topicId, jsDay, readDay, today, activeId, quiz, state, 
   );
 }
 
-function JsLesson({ day, today, quiz, result, readIds, bookmarked, onBookmark, onComplete, onStartQuiz, onNext, onChoice }: any) {
+function JsLesson({ day, today, quiz, result, readIds, bookmarked, onBookmark, onComplete, onStartQuiz, onClearQuiz, onNext, onChoice }: any) {
   const read = new Set(readIds || []);
   const ready = today.length > 0 && today.every((item: any) => read.has(item.id));
   return (
@@ -475,7 +479,7 @@ function JsLesson({ day, today, quiz, result, readIds, bookmarked, onBookmark, o
       <section className="quiz">
         <div className="quiz-head"><h2>{quiz ? "Practice quiz" : "Read deeply"}</h2><span className="level-pill">{quiz ? "Practice" : "Read"}</span></div>
         <div className="quiz-list">
-          {quiz ? <QuizList quiz={quiz} passed={Boolean(result?.passed)} onChoice={onChoice} onStartQuiz={onStartQuiz} onNext={onNext} /> : (
+          {quiz ? <QuizList quiz={quiz} passed={Boolean(result?.passed)} onChoice={onChoice} onStartQuiz={onStartQuiz} onClearQuiz={onClearQuiz} onNext={onNext} /> : (
             <>
               {result?.passed ? <p className="plan-note is-pass">You scored {result.score}/{result.total}. {day < PLAN_DAYS ? `Day ${day + 1} is unlocked.` : "This was the last day."}</p> : null}
               {result && !result.passed ? <p className="plan-note is-fail">You scored {result.score}/{result.total}. Score more than {PASS_SCORE} to unlock the next day.</p> : null}
@@ -504,7 +508,7 @@ function JsLesson({ day, today, quiz, result, readIds, bookmarked, onBookmark, o
   );
 }
 
-function QuizList({ quiz, passed, onChoice, onStartQuiz, onNext }: any) {
+function QuizList({ quiz, passed, onChoice, onStartQuiz, onClearQuiz, onNext }: any) {
   const answered = (quiz.picks || []).filter((pick: any) => Number.isInteger(pick)).length;
   const correct = (quiz.marks || []).filter(Boolean).length;
   const done = answered === quiz.items.length;
@@ -513,9 +517,15 @@ function QuizList({ quiz, passed, onChoice, onStartQuiz, onNext }: any) {
     <div className="plan-gate">
       <p className={`plan-note ${open ? "is-pass" : "is-fail"}`}>Your score: {correct}/{quiz.items.length}. {open ? (quiz.day < PLAN_DAYS ? `Day ${quiz.day + 1} is unlocked.` : "This was the last day.") : `Score more than ${PASS_SCORE} to unlock the next day.`}</p>
       {open && quiz.day < PLAN_DAYS ? <button type="button" className="btn btn-primary" onClick={onNext}>Open Day {quiz.day + 1}</button> : null}
+      <button type="button" className="btn" onClick={onClearQuiz}>Back to reading</button>
       <button type="button" className="btn" onClick={onStartQuiz}>Try again</button>
     </div>
-  ) : <p className="plan-note">Your score: {correct}/{quiz.items.length}. {quiz.items.length - answered} question{quiz.items.length - answered === 1 ? "" : "s"} still unanswered. The next day opens after every question is answered and the score is more than {PASS_SCORE}.</p>;
+  ) : (
+    <div className="plan-gate">
+      <p className="plan-note">Your score: {correct}/{quiz.items.length}. {quiz.items.length - answered} question{quiz.items.length - answered === 1 ? "" : "s"} still unanswered. The next day opens after every question is answered and the score is more than {PASS_SCORE}.</p>
+      <button type="button" className="btn" onClick={onClearQuiz}>Back to reading</button>
+    </div>
+  );
   return (
     <>
       {gate}
