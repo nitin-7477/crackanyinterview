@@ -7,9 +7,12 @@ import { useAuth } from "@/context/AuthContext.jsx";
 import { useStudy } from "@/context/StudyContext.jsx";
 import { HomeLayout } from "@/components/HomeLayout";
 import {
+  topics,
   catalogStats,
   difficultyStats,
   continueTarget,
+  questionsOf,
+  planQuestionList,
 } from "@/lib/catalog.js";
 import { DailyQuestCard } from "@/components/DailyQuestCard";
 import { ReadinessScoreCard } from "@/components/ReadinessScoreCard";
@@ -27,6 +30,14 @@ import {
   Target,
   ArrowRight,
 } from "lucide-react";
+
+const TOPIC_ICONS: Record<string, any> = {
+  javascript: Code2,
+  react: Atom,
+  "react-native": Smartphone,
+  output: BrainCircuit,
+  strings: Binary,
+};
 
 export default function DashboardPage() {
   const { account } = useAuth();
@@ -73,58 +84,41 @@ export default function DashboardPage() {
   const diff = difficultyStats(state);
   const next = continueTarget(state);
 
-  const coreSheets = [
-    {
-      id: "javascript",
-      title: "JavaScript 10-Day Mastery",
-      category: "Language Core",
-      desc: "Deep dive into Event Loop, Closures, Prototypes, Garbage Collection, WeakMaps & Async Microtasks.",
-      total: stats.rows.find((r: any) => r.topic.id === "javascript")?.total || 200,
-      done: stats.rows.find((r: any) => r.topic.id === "javascript")?.done || 0,
-      icon: Code2,
+  const coreSheets = topics.map((t) => {
+    const row = stats.rows.find((r: any) => r.topic.id === t.id);
+    const questions = questionsOf(t.id);
+    return {
+      id: t.id,
+      title: t.title,
+      category: t.category || "Curated Sheet",
+      desc: t.tagline || t.description || `Master ${questions.length} curated questions.`,
+      total: row?.total || questions.length,
+      done: row?.done || 0,
+      icon: TOPIC_ICONS[t.id] || Code2,
+      path: `/${t.id}`,
+    };
+  });
+
+  const spotlight = (() => {
+    const nextTarget = continueTarget(state);
+    if (nextTarget && nextTarget.detail) {
+      return {
+        title: nextTarget.detail,
+        desc: `Next recommended challenge in your ${nextTarget.title} track.`,
+        path: nextTarget.path,
+        topic: nextTarget.title,
+      };
+    }
+    const jsQuestions = planQuestionList();
+    const readSet = new Set(Object.values(state?.plan?.read || {}).flat());
+    const unread = jsQuestions.find((q: any) => !readSet.has(q.id)) || jsQuestions[0];
+    return {
+      title: unread?.q || "Core Technical Interview Question",
+      desc: unread?.section ? `Covers key concepts from ${unread.section}.` : "Curated interview question.",
       path: "/javascript",
-    },
-    {
-      id: "react",
-      title: "React 19 & Next.js Architecture",
-      category: "Frontend Framework",
-      desc: "Fiber reconciler, Server Components, Suspense boundaries, SSR/SSG caching, and custom state machines.",
-      total: stats.rows.find((r: any) => r.topic.id === "react")?.total || 150,
-      done: stats.rows.find((r: any) => r.topic.id === "react")?.done || 0,
-      icon: Atom,
-      path: "/react",
-    },
-    {
-      id: "react-native",
-      title: "React Native Mobile SDE",
-      category: "Mobile Architecture",
-      desc: "JSI, TurboModules, Fabric renderer, Reanimated 3, Gesture Handler, bridging & native memory optimization.",
-      total: stats.rows.find((r: any) => r.topic.id === "react-native")?.total || 220,
-      done: stats.rows.find((r: any) => r.topic.id === "react-native")?.done || 0,
-      icon: Smartphone,
-      path: "/react-native",
-    },
-    {
-      id: "output",
-      title: "Tricky JS Output & Edge Cases",
-      category: "Interview Traps",
-      desc: "50 tricky code puzzles: type coercion, scope hoisting, temporal dead zone, and event loop microtask order.",
-      total: stats.rows.find((r: any) => r.topic.id === "output")?.total || 50,
-      done: stats.rows.find((r: any) => r.topic.id === "output")?.done || 0,
-      icon: BrainCircuit,
-      path: "/output",
-    },
-    {
-      id: "strings",
-      title: "Strings & Algorithm Drills",
-      category: "Coding Rounds",
-      desc: "45 high-frequency coding round challenges: sliding window, anagrams, prefix trees & two pointers.",
-      total: stats.rows.find((r: any) => r.topic.id === "strings")?.total || 45,
-      done: stats.rows.find((r: any) => r.topic.id === "strings")?.done || 0,
-      icon: Binary,
-      path: "/strings",
-    },
-  ];
+      topic: "JavaScript Sheet",
+    };
+  })();
 
   return (
     <HomeLayout>
@@ -140,7 +134,7 @@ export default function DashboardPage() {
                 </span>
                 <span className="flex items-center gap-1.5 rounded-full border border-[var(--line)] bg-[var(--surface)] px-2.5 py-0.5 text-[11px] font-medium text-[var(--ink-secondary)]">
                   <Code2 className="h-3 w-3 text-zinc-400" />
-                  <span>665+ Questions</span>
+                  <span>{stats.total} Questions</span>
                 </span>
               </div>
 
@@ -201,7 +195,7 @@ export default function DashboardPage() {
               <span className="text-zinc-400">•</span>
               <span className="text-[var(--muted)]">{diff.hard.done} Hard</span>
             </div>
-            <p className="text-[10px] text-[var(--muted)] pt-1">Across all 5 interview sheets</p>
+            <p className="text-[10px] text-[var(--muted)] pt-1">Across all {topics.length} interview sheets</p>
           </div>
 
           <div className="rounded-2xl border border-[var(--line)] bg-[var(--paper)] p-4 space-y-1 shadow-sm">
@@ -332,23 +326,23 @@ export default function DashboardPage() {
               <span className="text-[11px] font-medium uppercase tracking-wider text-[var(--ink)] bg-[var(--surface)] border border-[var(--line)] px-2.5 py-0.5 rounded-full">
                 Today's Daily Spotlight
               </span>
-              <span className="text-xs text-[var(--ink-secondary)] font-medium">Core Concept</span>
+              <span className="text-xs text-[var(--ink-secondary)] font-medium">Core Challenge</span>
             </div>
 
             <div>
-              <h3 className="text-base font-semibold text-[var(--ink)]">
-                Implement a Custom Event Emitter with Once & Unsubscribe
+              <h3 className="text-base font-semibold text-[var(--ink)] line-clamp-2">
+                {spotlight.title}
               </h3>
-              <p className="text-xs text-[var(--ink-secondary)] mt-1.5 leading-relaxed">
-                Frequently asked at Uber, Atlassian, and Stripe. Tests closure encapsulation, memory leak prevention, and callback cleanup.
+              <p className="text-xs text-[var(--ink-secondary)] mt-1.5 leading-relaxed line-clamp-2">
+                {spotlight.desc}
               </p>
             </div>
 
             <div className="flex items-center justify-between pt-2 border-t border-[var(--line)]">
-              <span className="text-xs text-[var(--ink-secondary)] font-medium">Medium • JavaScript Sheet</span>
+              <span className="text-xs text-[var(--ink-secondary)] font-medium">{spotlight.topic}</span>
               <button
                 type="button"
-                onClick={() => router.push("/javascript")}
+                onClick={() => router.push(spotlight.path)}
                 className="flex items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[var(--surface)] hover:bg-[var(--paper-hover)] px-3.5 py-1.5 text-xs font-medium text-[var(--ink)] transition"
               >
                 <span>Solve Question</span>

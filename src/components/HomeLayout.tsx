@@ -7,6 +7,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { useStudy } from "../context/StudyContext.jsx";
 import { useTheme } from "../context/ThemeContext";
 import { loadDailyHistory, calculateStreakStats } from "../lib/streak";
+import { questionsOf } from "../lib/catalog.js";
 import { CAILogo } from "./CAILogo";
 import {
   LayoutDashboard,
@@ -63,13 +64,13 @@ export function HomeLayout({ children }: HomeLayoutProps) {
     { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   ];
 
-  const sheetsNav = [
-    { label: "JavaScript Core", href: "/javascript", icon: Code2, tag: "200 Qs" },
-    { label: "React & Next.js", href: "/react", icon: Atom, tag: "150 Qs" },
-    { label: "React Native", href: "/react-native", icon: Smartphone, tag: "220 Qs" },
-    { label: "Tricky JS Output", href: "/output", icon: BrainCircuit, tag: "50 Qs" },
-    { label: "DSA & LeetCode", href: "/strings", icon: Binary, tag: "65+ Qs" },
-  ];
+  const sheetsNav = useMemo(() => [
+    { label: "JavaScript Core", href: "/javascript", icon: Code2, tag: `${questionsOf("javascript").length} Qs` },
+    { label: "React & Next.js", href: "/react", icon: Atom, tag: `${questionsOf("react").length} Qs` },
+    { label: "React Native", href: "/react-native", icon: Smartphone, tag: `${questionsOf("react-native").length} Qs` },
+    { label: "Tricky JS Output", href: "/output", icon: BrainCircuit, tag: `${questionsOf("output").length} Qs` },
+    { label: "DSA & LeetCode", href: "/strings", icon: Binary, tag: `${questionsOf("strings").length} Qs` },
+  ], []);
 
   const practiceNav = [
     { label: "Mock Arena", href: "/mock", icon: Swords, tag: "Timed" },
