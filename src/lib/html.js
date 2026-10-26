@@ -102,14 +102,20 @@ export function highlightJs(escaped) {
   return html;
 }
 
+const RUN_ICON = `<svg class="run-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>`;
+
 export function wrapCodeBlocks(html) {
   const withCode = html.replace(/<pre><code>([\s\S]*?)<\/code><\/pre>/g, (_, code) => {
     return `<div class="code-panel">
       <div class="code-head">
         <span class="code-lang"><span aria-hidden="true">&lt;/&gt;</span> JavaScript</span>
-        <button type="button" class="copy-btn" aria-label="Copy">${COPY_ICON}</button>
+        <div class="code-actions">
+          <button type="button" class="run-code-btn" aria-label="Run Code">${RUN_ICON}<span>Run</span></button>
+          <button type="button" class="copy-btn" aria-label="Copy">${COPY_ICON}</button>
+        </div>
       </div>
       <pre><code>${highlightJs(code)}</code></pre>
+      <div class="live-console" style="display:none;"></div>
     </div>`;
   });
   return withCode.replace(
