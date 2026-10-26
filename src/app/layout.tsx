@@ -19,8 +19,17 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Crack Any Interview — LeetCode & TUF Style Frontend SDE Prep",
-  description: "Prepare for JavaScript, React, and Frontend SDE interviews with curated sheets, LeetCode-style practice, and mock tests.",
+  title: "Crack Any Interview — Free Frontend & Mobile SDE Interview Prep",
+  description: "Master JavaScript, React, React Native, tricky output challenges, and algorithms with curated day-by-day sheets and mock interviews.",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "32x32" },
+    ],
+    apple: [
+      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -29,15 +38,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" data-theme="dark" className={`${inter.variable} ${plexMono.variable}`}>
-      <head>
+    <html
+      lang="en"
+      data-theme="dark"
+      className={`dark ${inter.variable} ${plexMono.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="bg-[var(--bg)] text-[var(--ink)] antialiased transition-colors duration-200">
         <script
+          async
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("app-theme")||"dark";document.documentElement.setAttribute("data-theme",t);}catch(e){}})()`,
+            __html: `(function(){try{var t=localStorage.getItem("app-theme")||"dark";document.documentElement.setAttribute("data-theme",t);if(t==="dark"){document.documentElement.classList.add("dark");document.documentElement.classList.remove("light");}else{document.documentElement.classList.add("light");document.documentElement.classList.remove("dark");}}catch(e){}})()`,
           }}
         />
-      </head>
-      <body>
         <ThemeProvider>
           <AuthProvider>
             <StudyProvider>

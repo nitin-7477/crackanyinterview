@@ -21,14 +21,25 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const saved = localStorage.getItem("app-theme") as Theme | null;
     const initial = saved || "dark";
     setTheme(initial);
-    document.documentElement.setAttribute("data-theme", initial);
+    applyTheme(initial);
   }, []);
+
+  const applyTheme = (t: Theme) => {
+    document.documentElement.setAttribute("data-theme", t);
+    if (t === "dark") {
+      document.documentElement.classList.add("dark");
+      document.documentElement.classList.remove("light");
+    } else {
+      document.documentElement.classList.add("light");
+      document.documentElement.classList.remove("dark");
+    }
+  };
 
   const toggleTheme = () => {
     const next = theme === "dark" ? "light" : "dark";
     setTheme(next);
     localStorage.setItem("app-theme", next);
-    document.documentElement.setAttribute("data-theme", next);
+    applyTheme(next);
   };
 
   return (
