@@ -18,8 +18,8 @@ interface ReadinessScoreProps {
 export function ReadinessScoreCard({ state, className = "" }: ReadinessScoreProps) {
   const readiness = useMemo(() => computeReadinessScore(state), [state]);
 
-  // Scaled gauge percentage (300 to 950 scale)
-  const scorePct = Math.round(((readiness.score - 300) / (950 - 300)) * 100);
+  // Scaled gauge percentage (0 to 950 scale)
+  const scorePct = Math.min(100, Math.round((readiness.score / 950) * 100));
 
   return (
     <div
@@ -44,7 +44,9 @@ export function ReadinessScoreCard({ state, className = "" }: ReadinessScoreProp
         <div className="flex items-center gap-2 rounded-xl border border-zinc-800 bg-[#0d0d10] px-3.5 py-1.5 self-start sm:self-auto">
           <TrendingUp className="h-4 w-4 text-zinc-300" />
           <span className="text-xs font-bold text-zinc-100 font-mono">
-            Top {readiness.percentile}% of Candidates
+            {readiness.score > 0
+              ? `Top ${readiness.percentile}% of Candidates`
+              : "Unranked"}
           </span>
         </div>
       </div>
@@ -65,7 +67,9 @@ export function ReadinessScoreCard({ state, className = "" }: ReadinessScoreProp
             <span className="rounded-full border border-zinc-700 bg-zinc-800 px-2.5 py-0.5 text-[10px] font-semibold text-zinc-200">
               {readiness.tier}
             </span>
-            <span className="text-[11px] text-zinc-500">Tier-1 Screening Standard</span>
+            <span className="text-[11px] text-zinc-500">
+              {readiness.score > 0 ? "Tier-1 Screening Standard" : "Solve questions to activate score"}
+            </span>
           </div>
         </div>
 

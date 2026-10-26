@@ -239,7 +239,7 @@ export default function MockPage() {
               <Target className="h-4 w-4 text-zinc-400" />
               1. Choose Interview Domain
             </h2>
-            <span className="text-xs text-zinc-500">6 Curated Tracks Available</span>
+            <span className="text-xs text-zinc-500">{topicsList.length} Curated Tracks Available</span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">

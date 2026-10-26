@@ -85,7 +85,7 @@ export function calculateStreakStats(history: Record<string, number>) {
     key = getLocalDateString(checkDate.getTime());
   }
 
-  // Count backwards consecutive days
+  // Count backwards consecutive days only if active today or yesterday
   while (history[key] && history[key] > 0) {
     currentStreak += 1;
     checkDate.setDate(checkDate.getDate() - 1);
@@ -116,10 +116,10 @@ export function calculateStreakStats(history: Record<string, number>) {
     if (tempStreak > maxStreak) maxStreak = tempStreak;
   }
 
-  maxStreak = Math.max(maxStreak, currentStreak, totalActiveDays > 0 ? 1 : 0);
+  if (currentStreak > maxStreak) maxStreak = currentStreak;
 
   return {
-    currentStreak: Math.max(currentStreak, totalActiveDays > 0 ? 1 : 0),
+    currentStreak,
     maxStreak,
     longestStreak: maxStreak,
     totalActiveDays,
@@ -127,51 +127,70 @@ export function calculateStreakStats(history: Record<string, number>) {
   };
 }
 
-// Compute SDE Readiness Score (Scale: 300 to 950)
+// Compute SDE Readiness Score (Scale: 0 to 950, earned 100% dynamically)
 export function computeReadinessScore(state: any) {
-  if (!state) return { score: 320, tier: "Initiate", percentile: 15 };
+  if (!state) {
+    return {
+      score: 0,
+      tier: "Unranked",
+      percentile: 0,
+      isUnranked: true,
+      metrics: { solvedPts: 0, quizPts: 0, streakPts: 0 },
+    };
+  }
 
-  // 1. Solved Volume (max 380 pts)
-  const totalReadCount = (state.plan?.read ? Object.values(state.plan.read).flat().length : 0) +
+  // 1. Solved Volume (max 450 pts)
+  const totalReadCount =
+    (state.plan?.read ? Object.values(state.plan.read).flat().length : 0) +
     (state.readPlans?.react?.read ? Object.values(state.readPlans.react.read).flat().length : 0) +
     (state.readPlans?.["react-native"]?.read ? Object.values(state.readPlans["react-native"].read).flat().length : 0) +
     (state.visits ? Object.values(state.visits).flat().length : 0);
 
-  const solvedPts = Math.min(380, Math.round((totalReadCount / 200) * 380));
+  const solvedPts = Math.min(450, Math.round((totalReadCount / 200) * 450));
 
-  // 2. Quiz Performance & Accuracy (max 300 pts)
+  // 2. Quiz Performance & Accuracy (max 350 pts)
   const passedQuizzes = Object.values(state.plan?.results || {}).filter((r: any) => r?.passed).length;
-  const quizPts = Math.min(300, passedQuizzes * 30);
+  const quizPts = Math.min(350, passedQuizzes * 35);
 
-  // 3. Consistency & Streak (max 170 pts)
+  // 3. Consistency & Streak (max 150 pts)
   const history = loadDailyHistory(state.activity);
   const { currentStreak, totalActiveDays } = calculateStreakStats(history);
-  const streakPts = Math.min(170, currentStreak * 15 + totalActiveDays * 8);
+  const streakPts = Math.min(150, currentStreak * 15 + totalActiveDays * 5);
 
-  // Base score 300
-  const score = Math.min(950, Math.max(300, 300 + solvedPts + quizPts + streakPts));
+  const score = Math.min(950, solvedPts + quizPts + streakPts);
 
-  let tier = "Initiate";
-  let percentile = 20;
+  if (score === 0) {
+    return {
+      score: 0,
+      tier: "Unranked",
+      percentile: 0,
+      isUnranked: true,
+      metrics: { solvedPts: 0, quizPts: 0, streakPts: 0 },
+    };
+  }
+
+  let tier = "Initiate SDE";
+  let percentile = 15;
 
   if (score >= 850) {
     tier = "Principal Architect";
     percentile = 98;
-  } else if (score >= 750) {
+  } else if (score >= 700) {
     tier = "Senior SDE Ready";
-    percentile = 89;
-  } else if (score >= 620) {
+    percentile = 85;
+  } else if (score >= 500) {
     tier = "Mid-Level Competitor";
-    percentile = 72;
-  } else if (score >= 480) {
+    percentile = 65;
+  } else if (score >= 250) {
     tier = "Junior SDE Contender";
-    percentile = 48;
+    percentile = 40;
   }
 
   return {
     score,
     tier,
     percentile,
+    isUnranked: false,
     metrics: {
       solvedPts,
       quizPts,
