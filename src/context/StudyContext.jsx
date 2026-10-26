@@ -14,6 +14,8 @@ import {
   planQuestionList,
 } from "../lib/catalog.js";
 
+import { recordDailyActivity } from "../lib/streak";
+
 const StudyContext = createContext(null);
 
 function loadJson(key, fallback) {
@@ -57,7 +59,12 @@ function initialState() {
 }
 
 function pushActivity(state, entry) {
-  return [{ id: crypto.randomUUID(), at: Date.now(), ...entry }, ...state.activity].slice(0, 40);
+  try {
+    recordDailyActivity(1);
+  } catch (e) {
+    // ignore in ssr
+  }
+  return [{ id: crypto.randomUUID(), at: Date.now(), ...entry }, ...state.activity].slice(0, 100);
 }
 
 function quizScore(quiz) {
