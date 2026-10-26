@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AppHeader } from "./AppHeader";
-import { HtmlBlock, QuizPrompt, answerHtml } from "./HtmlBlock.jsx";
-import { TopicBadge, TopicIcon } from "./Icons.jsx";
+import Link from "next/link";
+import { HomeLayout } from "./HomeLayout";
+import { RichAnswer, QuizPrompt, answerHtml } from "./RichAnswer";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useStudy } from "../context/StudyContext.jsx";
 import { quizMatchesBank } from "../lib/plan.js";
@@ -30,91 +30,98 @@ import {
   topicById,
   withNotes,
 } from "../lib/catalog.js";
+import {
+  Code2,
+  Atom,
+  Smartphone,
+  BrainCircuit,
+  Binary,
+  CheckCircle2,
+  Circle,
+  Star,
+  ChevronDown,
+  ChevronUp,
+  ChevronsUpDown,
+  Search,
+  Clock,
+  BookOpen,
+  ArrowRight,
+  ArrowLeft,
+  Lock,
+  Check,
+  Plus,
+  Trash2,
+  Edit3,
+  X,
+  Sparkles,
+  RotateCcw,
+  SlidersHorizontal,
+} from "lucide-react";
 
-const LEVELS: Record<string, string> = { basic: "Beginner", intermediate: "Intermediate", advanced: "Advanced" };
+const TOPIC_ICONS: Record<string, any> = {
+  javascript: Code2,
+  react: Atom,
+  "react-native": Smartphone,
+  output: BrainCircuit,
+  strings: Binary,
+};
 
-function DaySwitch({ total, current, unlocked, complete, onPick }: any) {
-  return (
-    <div className="day-switch" aria-label="Days">
-      {Array.from({ length: total }, (_, index) => {
-        const number = index + 1;
-        const classes = ["day-chip"];
-        if (number === current) classes.push("is-current");
-        else if (complete(number)) classes.push("is-done");
-        return (
-          <button key={number} type="button" className={classes.join(" ")} disabled={!unlocked(number)} onClick={() => onPick(number)}>
-            {number}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
+const DIFFICULTY_CONFIG: Record<string, { label: string; badgeClass: string }> = {
+  basic: {
+    label: "Beginner",
+    badgeClass: "border-zinc-700/60 bg-zinc-800/50 text-zinc-300",
+  },
+  intermediate: {
+    label: "Intermediate",
+    badgeClass: "border-zinc-600/70 bg-zinc-800/80 text-zinc-200",
+  },
+  advanced: {
+    label: "Advanced",
+    badgeClass: "border-zinc-500 bg-zinc-700/70 text-zinc-100 font-medium",
+  },
+};
 
-function TipBanner({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState(true);
-  if (!open) return null;
-  return (
-    <aside className="callout">
-      <span className="tip-ico" aria-hidden="true">
-        <svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4" /><path d="M12 3a6 6 0 0 0-3 11c.4.4.8 1 1 1.6V17h4v-1.4c.2-.6.6-1.2 1-1.6A6 6 0 0 0 12 3z" /></svg>
-      </span>
-      <div>
-        <p className="callout-label">Interviewer tip</p>
-        <p>{children}</p>
-      </div>
-      <button type="button" className="tip-close" aria-label="Dismiss tip" onClick={() => setOpen(false)}>×</button>
-    </aside>
-  );
-}
-
-function HeroArt() {
-  return (
-    <div className="hero-art" aria-hidden="true">
-      <svg viewBox="0 0 220 150">
-        <rect x="28" y="28" width="130" height="88" rx="14" fill="#1e293b" />
-        <rect x="40" y="42" width="78" height="6" rx="3" fill="#34d399" />
-        <rect x="40" y="56" width="96" height="6" rx="3" fill="#60a5fa" />
-        <rect x="40" y="70" width="64" height="6" rx="3" fill="#a78bfa" />
-        <rect x="40" y="84" width="52" height="6" rx="3" fill="#fbbf24" />
-        <rect x="128" y="58" width="64" height="64" rx="16" fill="#f5c518" />
-        <text x="160" y="96" textAnchor="middle" fontSize="18" fontWeight="700" fill="#1f2937">JS</text>
-        <path d="M18 24l4 8 8 2-8 2-4 8-4-8-8-2 8-2z" fill="#f5c518" />
-        <path d="M190 18l3 6 6 1.5-6 1.5-3 6-3-6-6-1.5 6-1.5z" fill="#fbbf24" />
-      </svg>
-    </div>
-  );
-}
-
-function Bookmark({ id, on, onToggle }: any) {
-  return (
-    <button type="button" className={`bookmark-btn${on ? " is-on" : ""}`} aria-label={on ? "Remove bookmark" : "Bookmark"} onClick={() => onToggle(id)}>
-      {on ? "★" : "☆"}
-    </button>
-  );
-}
-
-export function TopicView({ topicId, dayParam }: { topicId: string; dayParam?: string }) {
+export function TopicView({
+  topicId,
+  dayParam,
+}: {
+  topicId: string;
+  dayParam?: string;
+}) {
   const topic = topicById(topicId);
   const router = useRouter();
   const searchParams = useSearchParams();
   const focusParam = searchParams.get("focus") || "";
   const quizParam = searchParams.get("quiz") === "true";
 
-  const { account, logout } = useAuth();
+  const { account } = useAuth();
   const { state, dispatch } = useStudy();
-  const [activeId, setActiveId] = useState(focusParam);
+
+  const [activeQuestionId, setActiveQuestionId] = useState<string>(focusParam);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
+  const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [quizIndex, setQuizIndex] = useState(0);
   const [editor, setEditor] = useState<any>(null);
+  const [tipOpen, setTipOpen] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     if (!account) {
       router.replace("/login");
     }
-  }, [account, router]);
+  }, [mounted, account, router]);
 
-  const jsDay = topicId === PLAN_TOPIC ? resolvedJsDay(state.plan, dayParam) : 1;
-  const readDay = READ_PLANS[topicId] ? resolvedReadDay(topicId, state.readPlans[topicId], dayParam) : 1;
+  const jsDay = topicId === PLAN_TOPIC ? resolvedJsDay(state?.plan, dayParam) : 1;
+  const readDay = READ_PLANS[topicId]
+    ? resolvedReadDay(topicId, state?.readPlans?.[topicId], dayParam)
+    : 1;
 
   useEffect(() => {
     if (!topic) return;
@@ -129,474 +136,1050 @@ export function TopicView({ topicId, dayParam }: { topicId: string; dayParam?: s
   }, [topic, topicId, dayParam, jsDay, readDay, router, dispatch]);
 
   const jsQuestions = useMemo(() => planQuestionList(), []);
-  const today = topicId === PLAN_TOPIC
-    ? dayQuestions(jsQuestions, jsDay)
-    : READ_PLANS[topicId]
-      ? questionsForDay(questionsOf(topicId), readDay, READ_PLANS[topicId].perDay)
-      : withNotes(topicId, state.notes);
+  const today = useMemo(() => {
+    if (topicId === PLAN_TOPIC) {
+      return dayQuestions(jsQuestions, jsDay);
+    }
+    if (READ_PLANS[topicId]) {
+      return questionsForDay(questionsOf(topicId), readDay, READ_PLANS[topicId].perDay);
+    }
+    return withNotes(topicId, state?.notes);
+  }, [topicId, jsQuestions, jsDay, readDay, state?.notes]);
 
+  // Set initial focus
   useEffect(() => {
     if (!today.length) return;
-    if (!today.some((item: any) => item.id === activeId)) setActiveId(today[0].id);
-  }, [today, activeId]);
+    if (focusParam) {
+      setActiveQuestionId(focusParam);
+      setExpandedIds((prev) => new Set([...prev, focusParam]));
+      const node = document.getElementById(`q-${focusParam}`);
+      node?.scrollIntoView({ block: "start", behavior: "smooth" });
+    } else if (!activeQuestionId && today[0]) {
+      setActiveQuestionId(today[0].id);
+    }
+  }, [today, focusParam, activeQuestionId]);
 
+  // Auto expand when question is focused
   useEffect(() => {
-    if (!focusParam) return;
-    setActiveId(focusParam);
-    const node = document.getElementById(`q-${focusParam}`);
-    node?.scrollIntoView({ block: "start" });
-  }, [focusParam]);
+    if (activeQuestionId) {
+      setExpandedIds((prev) => new Set([...prev, activeQuestionId]));
+    }
+  }, [activeQuestionId]);
 
+  // Visit tracking for standalone modules
   useEffect(() => {
     if (topicId !== "strings" && topicId !== "output") return;
-    const current = today.find((item: any) => item.id === activeId);
+    const current = today.find((item: any) => item.id === activeQuestionId);
     if (!current) return;
     dispatch({ type: "visit", topicId, id: current.id, title: current.q, detail: topic?.title });
-  }, [topicId, activeId, today, dispatch, topic]);
+  }, [topicId, activeQuestionId, today, dispatch, topic]);
 
+  // Auto trigger quiz if requested via URL param
   useEffect(() => {
     if (topicId !== PLAN_TOPIC || !quizParam) return;
-    const read = new Set(state.plan.read[jsDay] || []);
-    if (!today.length || !today.every((item: any) => read.has(item.id))) return;
-    if (state.plan.activeQuiz?.day === jsDay) return;
+    if (today.length === 0) return;
+    if (state?.plan?.activeQuiz?.day === jsDay) return;
     dispatch({ type: "start-quiz", day: jsDay });
-  }, [topicId, quizParam, today, jsDay, state.plan, dispatch]);
+  }, [topicId, quizParam, today, jsDay, state?.plan, dispatch]);
+
+  const bookmarked = useMemo(() => new Set(state?.bookmarks || []), [state?.bookmarks]);
+  const isJs = topicId === PLAN_TOPIC;
+  const isReadPlan = Boolean(READ_PLANS[topicId]);
+  const hasDays = isJs || isReadPlan;
+  const totalDays = isJs ? PLAN_DAYS : isReadPlan ? readPlanDayCount(topicId) : 1;
+  const currentDay = isJs ? jsDay : readDay;
+
+  // Determine read/completed set for current view
+  const readIds = useMemo(() => {
+    return new Set<string>(
+      isJs
+        ? state?.plan?.read?.[jsDay] || []
+        : isReadPlan
+        ? state?.readPlans?.[topicId]?.read?.[readDay] || []
+        : state?.visits?.[topicId] || []
+    );
+  }, [isJs, isReadPlan, topicId, jsDay, readDay, state?.plan?.read, state?.readPlans, state?.visits]);
+
+  const completedCount = today.filter((item: any) => readIds.has(item.id)).length;
+  const dayFinished = today.length > 0 && completedCount === today.length;
+  const activeQuiz =
+    isJs &&
+    state?.plan?.activeQuiz?.day === jsDay &&
+    quizMatchesBank(state?.plan?.activeQuiz)
+      ? state?.plan?.activeQuiz
+      : null;
+
+  // Filter questions hook must run before any return statements
+  const filteredQuestions = useMemo(() => {
+    return today.filter((item: any) => {
+      const matchQuery =
+        !searchQuery.trim() ||
+        item.q.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.section?.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchDifficulty =
+        difficultyFilter === "all" || item.level === difficultyFilter;
+
+      const isCompleted = readIds.has(item.id);
+      const isBookmarked = bookmarked.has(item.id);
+
+      const matchStatus =
+        statusFilter === "all"
+          ? true
+          : statusFilter === "done"
+          ? isCompleted
+          : statusFilter === "todo"
+          ? !isCompleted
+          : statusFilter === "starred"
+          ? isBookmarked
+          : true;
+
+      return matchQuery && matchDifficulty && matchStatus;
+    });
+  }, [today, searchQuery, difficultyFilter, statusFilter, readIds, bookmarked]);
+
+  // Handlers
+  const handleToggleComplete = (id: string, title: string) => {
+    if (isJs) {
+      dispatch({ type: "toggle-js-read", day: jsDay, id, title });
+    } else if (isReadPlan) {
+      dispatch({ type: "toggle-read", topicId, day: readDay, id, title, detail: topic?.title });
+    } else {
+      dispatch({ type: "visit", topicId, id, title, detail: topic?.title });
+    }
+  };
+
+  const handleToggleBookmark = (id: string) => {
+    dispatch({ type: "bookmark", id });
+  };
+
+  const handleAccordionToggle = (id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+    setActiveQuestionId(id);
+  };
+
+  const handleToggleAll = () => {
+    if (expandedIds.size === today.length) {
+      setExpandedIds(new Set());
+    } else {
+      setExpandedIds(new Set(today.map((item: any) => item.id)));
+    }
+  };
+
+  const handlePickDay = (day: number) => {
+    router.push(isJs ? `/javascript/day/${day}` : `/${topicId}/day/${day}`);
+  };
+
+  if (!mounted || !account) {
+    return (
+      <HomeLayout>
+        <div className="max-w-6xl mx-auto space-y-6 pb-24 animate-pulse">
+          <div className="h-40 rounded-2xl border border-[var(--line)] bg-[var(--surface)]" />
+          <div className="h-16 rounded-2xl border border-[var(--line)] bg-[var(--surface)]" />
+          <div className="space-y-3">
+            <div className="h-20 rounded-2xl border border-[var(--line)] bg-[var(--surface)]" />
+            <div className="h-20 rounded-2xl border border-[var(--line)] bg-[var(--surface)]" />
+            <div className="h-20 rounded-2xl border border-[var(--line)] bg-[var(--surface)]" />
+          </div>
+        </div>
+      </HomeLayout>
+    );
+  }
 
   if (!topic) {
     router.replace("/dashboard");
     return null;
   }
 
-  const bookmarked = new Set(state.bookmarks);
-  const quiz = topicId === PLAN_TOPIC && state.plan.activeQuiz?.day === jsDay && quizMatchesBank(state.plan.activeQuiz)
-    ? state.plan.activeQuiz
-    : null;
-
-  function toggleBookmark(id: string) {
-    dispatch({ type: "bookmark", id });
-  }
-
-  return (
-    <>
-      <AppHeader account={account} topicId={topicId} onLogout={() => { logout(); router.push("/login"); }} />
-      <div className="app-body">
-        <aside className="sidebar">
-          <button type="button" className="back-btn" aria-label="Dashboard" onClick={() => router.push("/dashboard")}>‹</button>
-          <Sidebar
-            topic={topic}
-            topicId={topicId}
-            jsDay={jsDay}
-            readDay={readDay}
-            today={today}
-            activeId={activeId}
-            quiz={quiz}
-            quizIndex={quizIndex}
-            state={state}
-            onSelect={(id: string, index: number) => {
-              setActiveId(id);
-              if (Number.isInteger(index)) setQuizIndex(index);
-              document.getElementById(Number.isInteger(index) ? `quiz-q-${index}` : `q-${id}`)?.scrollIntoView({ block: "start" });
-            }}
-            onDay={(day: number) => router.push(topicId === PLAN_TOPIC ? `/javascript/day/${day}` : `/${topicId}/day/${day}`)}
-          />
-        </aside>
-        <main className="lesson">
-          <Lesson
-            topic={topic}
-            topicId={topicId}
-            jsDay={jsDay}
-            readDay={readDay}
-            today={today}
-            activeId={activeId}
-            quiz={quiz}
-            state={state}
-            bookmarked={bookmarked}
-            onBookmark={toggleBookmark}
-            onComplete={(id: string, title: string) => {
-              if (topicId === PLAN_TOPIC) dispatch({ type: "toggle-js-read", day: jsDay, id, title });
-              else dispatch({ type: "toggle-read", topicId, day: readDay, id, title, detail: topic.title });
-            }}
-            onStartQuiz={() => dispatch({ type: "start-quiz", day: jsDay })}
-            onChoice={(questionIndex: number, optionIndex: number) => dispatch({ type: "pick-choice", questionIndex, optionIndex })}
-            onNext={() => router.push(topicId === PLAN_TOPIC ? `/javascript/day/${jsDay + 1}` : `/${topicId}/day/${readDay + 1}`)}
-            onEdit={(item: any) => setEditor(item)}
-            onDelete={(id: string) => dispatch({ type: "delete-note", id })}
-          />
-        </main>
-      </div>
-      {editor ? (
-        <dialog className="editor" open>
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              const data = new FormData(event.currentTarget);
-              dispatch({
-                type: "save-note",
-                note: {
-                  id: editor.id,
-                  topicId,
-                  level: data.get("level"),
-                  q: String(data.get("q") || "").trim(),
-                  a: String(data.get("a") || "").trim(),
-                },
-              });
-              setEditor(null);
-            }}
-          >
-            <h3>Edit note</h3>
-            <label>Question<textarea name="q" defaultValue={editor.q} required /></label>
-            <label>Answer<textarea name="a" defaultValue={editor.a} required /></label>
-            <label>Level
-              <select name="level" defaultValue={editor.level || "basic"}>
-                <option value="basic">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-              </select>
-            </label>
-            <button className="btn btn-primary" type="submit">Save</button>
-            <button className="btn" type="button" onClick={() => setEditor(null)}>Cancel</button>
-          </form>
-        </dialog>
-      ) : null}
-    </>
-  );
-}
-
-function Sidebar({ topic, topicId, jsDay, readDay, today, activeId, quiz, quizIndex, state, onSelect, onDay }: any) {
-  if (topicId === PLAN_TOPIC) return <JsSidebar day={jsDay} today={today} activeId={activeId} quiz={quiz} quizIndex={quizIndex} state={state} onSelect={onSelect} onDay={onDay} />;
-  if (READ_PLANS[topicId]) return <ReadSidebar topicId={topicId} title={topic.title} day={readDay} today={today} activeId={activeId} state={state} onSelect={onSelect} onDay={onDay} />;
-  const index = Math.max(0, today.findIndex((item: any) => item.id === activeId));
-  const pct = today.length ? Math.round((index / today.length) * 100) : 0;
-  const remaining = today.slice(index).reduce((sum: number, item: any) => sum + minutes(item), 0);
-  return (
-    <>
-      <div className="step-dots">{today.map((item: any, i: number) => <span key={item.id} className={i <= index ? "is-on" : ""} />)}</div>
-      <div className="module-card">
-        <div className="module-title"><TopicBadge id={topicId} /><div><h2>{topic.title}</h2><p>{topic.heading}</p></div></div>
-        <p className="module-kicker">{index} / {today.length} topics</p>
-        <div className="progress-row"><div className="progress-track" aria-hidden="true"><div className="progress-bar" style={{ width: `${pct}%` }} /></div><span>{pct}%</span></div>
-        <p className="remain">~{remaining} min remaining</p>
-      </div>
-      <p className="topics-label">Topics</p>
-      <nav className="sidebar-nav">
-        {today.map((item: any, i: number) => (
-          <button type="button" key={item.id} className={`side-item${item.id === activeId ? " is-active" : ""}`} onClick={() => onSelect(item.id)}>
-            <TopicIcon index={i} />
-            <span className="side-copy"><strong>{i + 1}. {item.q}</strong><small>{minutes(item)} min</small></span>
-          </button>
-        ))}
-      </nav>
-    </>
-  );
-}
-
-function JsSidebar({ day, today, activeId, quiz, quizIndex, state, onSelect, onDay }: any) {
-  const passedDays = Object.values(state.plan.results).filter((result: any) => result?.passed).length;
-  const pct = Math.round((passedDays / PLAN_DAYS) * 100);
-  const read = new Set(state.plan.read[day] || []);
-  const done = readCount([...read], today);
-  const answered = quiz ? (quiz.picks || []).filter((pick: any) => Number.isInteger(pick)).length : 0;
-  const correct = quiz ? (quiz.marks || []).filter(Boolean).length : 0;
-  return (
-    <>
-      <div className="step-dots">{Array.from({ length: PLAN_DAYS }, (_, index) => <span key={index} className={index + 1 <= day || state.plan.results[index + 1]?.passed ? "is-on" : ""} />)}</div>
-      <div className="module-card">
-        <div className="module-title"><TopicBadge id="javascript" /><div><h2>10-day plan</h2><p>JavaScript · 20 to read, then a {QUIZ_SIZE}-question practice</p></div></div>
-        <p className="module-kicker">{passedDays} / {PLAN_DAYS} days</p>
-        <div className="progress-row"><div className="progress-track"><div className="progress-bar" style={{ width: `${pct}%` }} /></div><span>{pct}%</span></div>
-        <p className="remain">{passedDays === PLAN_DAYS ? "Plan complete" : quiz ? `Day ${day} · ${correct}/${quiz.items.length} correct` : `Day ${day} · ${Math.min(done, today.length)}/${today.length} read`}</p>
-      </div>
-      <p className="topics-label">{quiz ? `Day ${day} quiz` : `Day ${day}`}</p>
-      <nav className="sidebar-nav">
-        <DaySwitch
-          total={PLAN_DAYS}
-          current={day}
-          unlocked={(number: number) => isDayUnlocked(number, state.plan.results)}
-          complete={(number: number) => Boolean(state.plan.results[number]?.passed)}
-          onPick={onDay}
-        />
-        {quiz
-          ? quiz.items.map((item: any, index: number) => {
-            const picked = quiz.picks?.[index];
-            const status = Number.isInteger(picked) ? (quiz.marks[index] ? "Correct" : "Wrong") : "Not answered";
-            return (
-              <button type="button" key={`${item.id}-${index}`} className={`side-item${index === quizIndex ? " is-active" : ""}`} onClick={() => onSelect(item.id, index)}>
-                <TopicIcon index={index} />
-                <span className="side-copy"><strong>{index + 1}. {item.q || "Practice question"}</strong><small>{status}</small></span>
-              </button>
-            );
-          })
-          : today.map((item: any, index: number) => (
-            <button type="button" key={item.id} className={`side-item${item.id === activeId ? " is-active" : ""}`} onClick={() => onSelect(item.id)}>
-              <TopicIcon index={index} />
-              <span className="side-copy"><strong>{index + 1}. {item.q}</strong><small>{read.has(item.id) ? "Complete" : item.section}</small></span>
-            </button>
-          ))}
-        <div className="next-day-wrap">
-          {day < PLAN_DAYS ? (
-            <>
-              <button type="button" className="next-day" disabled={!isDayUnlocked(day + 1, state.plan.results)} onClick={() => onDay(day + 1)}>Day {day + 1}</button>
-              <p className="next-day-hint">
-                {isDayUnlocked(day + 1, state.plan.results)
-                  ? `Day ${day} is complete. Open Day ${day + 1}.`
-                  : `Score more than ${PASS_SCORE} to open Day ${day + 1}.${quiz ? ` ${answered}/${quiz.items.length} answered.` : ""}`}
-              </p>
-            </>
-          ) : <p className="next-day-hint">{state.plan.results[day]?.passed ? "You finished the 10-day plan." : "This is the last day."}</p>}
-        </div>
-      </nav>
-    </>
-  );
-}
-
-function ReadSidebar({ topicId, title, day, today, activeId, state, onSelect, onDay }: any) {
-  const config = READ_PLANS[topicId];
-  const questions = questionsOf(topicId);
-  const total = readPlanDayCount(topicId);
-  const plan = state.readPlans[topicId];
-  let finished = 0;
-  for (let number = 1; number <= total; number += 1) {
-    if (dayComplete(plan.read[number], questionsForDay(questions, number, config.perDay))) finished += 1;
-  }
-  const pct = Math.round((finished / total) * 100);
-  const read = new Set(plan.read[day] || []);
-  const done = readCount([...read], today);
-  const nextUnlocked = dayComplete(plan.read[day], today) && day < total;
-  return (
-    <>
-      <div className="step-dots">{Array.from({ length: total }, (_, index) => <span key={index} className={index + 1 === day || dayComplete(plan.read[index + 1], questionsForDay(questions, index + 1, config.perDay)) ? "is-on" : ""} />)}</div>
-      <div className="module-card">
-        <div className="module-title"><TopicBadge id={topicId} /><div><h2>{total}-day plan</h2><p>{title} · {config.perDay} questions a day</p></div></div>
-        <p className="module-kicker">{finished} / {total} days</p>
-        <div className="progress-row"><div className="progress-track"><div className="progress-bar" style={{ width: `${pct}%` }} /></div><span>{pct}%</span></div>
-        <p className="remain">{finished === total ? "Plan complete" : `Day ${day} · ${Math.min(done, today.length)}/${today.length} read`}</p>
-      </div>
-      <p className="topics-label">Day {day}</p>
-      <nav className="sidebar-nav">
-        <DaySwitch
-          total={total}
-          current={day}
-          unlocked={(number: number) => readDayUnlocked(number, plan.read, questions, config.perDay)}
-          complete={(number: number) => dayComplete(plan.read[number], questionsForDay(questions, number, config.perDay))}
-          onPick={onDay}
-        />
-        {today.map((item: any, index: number) => (
-          <button type="button" key={item.id} className={`side-item${item.id === activeId ? " is-active" : ""}`} onClick={() => onSelect(item.id)}>
-            <TopicIcon index={index} />
-            <span className="side-copy"><strong>{(day - 1) * config.perDay + index + 1}. {item.q}</strong><small>{read.has(item.id) ? "Complete" : item.section}</small></span>
-          </button>
-        ))}
-        <div className="next-day-wrap">
-          {day < total ? (
-            <>
-              <button type="button" className="next-day" disabled={!nextUnlocked} onClick={() => onDay(day + 1)}>Day {day + 1}</button>
-              <p className="next-day-hint">{nextUnlocked ? `All ${today.length} questions are read. Open Day ${day + 1}.` : `Read all ${today.length} questions to open Day ${day + 1}. ${done}/${today.length} read.`}</p>
-            </>
-          ) : <p className="next-day-hint">{dayComplete(plan.read[day], today) ? `You finished the ${total}-day plan.` : "This is the last day."}</p>}
-        </div>
-      </nav>
-    </>
-  );
-}
-
-function Lesson({ topic, topicId, jsDay, readDay, today, activeId, quiz, state, bookmarked, onBookmark, onComplete, onStartQuiz, onNext, onChoice, onEdit, onDelete }: any) {
-  if (topicId === PLAN_TOPIC) {
-    return <JsLesson day={jsDay} today={today} quiz={quiz} result={state.plan.results[jsDay]} readIds={state.plan.read[jsDay]} bookmarked={bookmarked} onBookmark={onBookmark} onComplete={onComplete} onStartQuiz={onStartQuiz} onNext={onNext} onChoice={onChoice} />;
-  }
-  if (READ_PLANS[topicId]) {
-    return <ReadLesson topic={topic} day={readDay} today={today} readIds={state.readPlans[topicId].read[readDay]} bookmarked={bookmarked} onBookmark={onBookmark} onComplete={onComplete} onNext={onNext} />;
-  }
+  const TopicIcon = TOPIC_ICONS[topicId] || Code2;
   const totalMins = today.reduce((sum: number, item: any) => sum + minutes(item), 0);
-  return (
-    <>
-      <header className="hero hero-card">
-        <div>
-          <TopicBadge id={topic.id} />
-          <p className="eyebrow">Interview prep · {topic.title}</p>
-          <h1>{topic.title} Interview Questions</h1>
-          <p className="lede">{topic.lede}</p>
-          <div className="hero-meta"><span>{today.length} questions</span><span>{topic.heading}</span><span>~{totalMins} min to review</span></div>
-        </div>
-        <HeroArt />
-      </header>
-      <TipBanner>{topic.tip}</TipBanner>
-      <section className="quiz">
-        <div className="quiz-head"><h2>{topic.title} questions and answers</h2><span className="level-pill">Basic to Advanced</span></div>
-        <div className="quiz-list">
-          {today.map((item: any, index: number) => (
-            <article key={item.id} id={`q-${item.id}`} className={`qa${item.id === activeId ? " is-active" : ""}`}>
-              <div className="qa-q">
-                <span className="badge q">{index + 1}</span>
-                <div>
-                  <strong>{index + 1}. {item.q}</strong>
-                  <Bookmark id={item.id} on={bookmarked.has(item.id)} onToggle={onBookmark} />
-                  <span className="qa-meta">{LEVELS[item.level] || item.level} · {item.section}</span>
-                </div>
-              </div>
-              <div className="qa-a">
-                <span className="badge a">A</span>
-                <div className="answer">
-                  <HtmlBlock html={answerHtml(item)} />
-                  {item.source === "you" ? (
-                    <div className="card-actions">
-                      <button type="button" className="btn" onClick={() => onEdit(item)}>Edit</button>
-                      <button type="button" className="btn" onClick={() => onDelete(item.id)}>Delete</button>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-      {topic.takeaways?.length ? (
-        <section className="takeaways"><h2>Key Takeaways</h2><ul>{topic.takeaways.map((line: string) => <li key={line}>{line}</li>)}</ul></section>
-      ) : null}
-    </>
-  );
-}
 
-function JsLesson({ day, today, quiz, result, readIds, bookmarked, onBookmark, onComplete, onStartQuiz, onNext, onChoice }: any) {
-  const read = new Set(readIds || []);
-  const ready = today.length > 0 && today.every((item: any) => read.has(item.id));
   return (
-    <>
-      <header className="hero hero-card">
-        <div>
-          <TopicBadge id="javascript" />
-          <p className="eyebrow">JavaScript plan · Day {day} of {PLAN_DAYS}</p>
-          <h1>Day {day}</h1>
-          <p className="lede">{quiz ? `Answer all ${QUIZ_SIZE} questions. Day ${day + 1} opens only after you score more than ${PASS_SCORE}.` : `Read these ${today.length} questions. The practice quiz unlocks after every one is marked as read.`}</p>
-          <div className="hero-meta"><span>{today.length} to read</span><span>{QUIZ_SIZE} practice questions</span><span>Pass mark: more than {PASS_SCORE}</span></div>
-        </div>
-        <HeroArt />
-      </header>
-      <TipBanner>Read the {READ_PER_DAY} questions carefully. Practice is required, and the next day opens only after you score more than {PASS_SCORE} out of {QUIZ_SIZE}.</TipBanner>
-      <section className="quiz">
-        <div className="quiz-head"><h2>{quiz ? "Practice quiz" : "Read deeply"}</h2><span className="level-pill">{quiz ? "Practice" : "Read"}</span></div>
-        <div className="quiz-list">
-          {quiz ? <QuizList quiz={quiz} passed={Boolean(result?.passed)} onChoice={onChoice} onStartQuiz={onStartQuiz} onNext={onNext} /> : (
+    <HomeLayout>
+      <div className="max-w-6xl mx-auto space-y-6 pb-24">
+        {/* Breadcrumb Navigation */}
+        <div className="flex items-center gap-2 text-xs text-zinc-400">
+          <Link href="/dashboard" className="hover:text-zinc-200 transition">
+            Dashboard
+          </Link>
+          <span>/</span>
+          <span className="text-zinc-400">Curated Sheets</span>
+          <span>/</span>
+          <span className="text-[var(--ink)] font-medium">{topic.title}</span>
+          {hasDays && (
             <>
-              {result?.passed ? <p className="plan-note is-pass">You scored {result.score}/{result.total}. {day < PLAN_DAYS ? `Day ${day + 1} is unlocked.` : "This was the last day."}</p> : null}
-              {result && !result.passed ? <p className="plan-note is-fail">You scored {result.score}/{result.total}. Score more than {PASS_SCORE} to unlock the next day.</p> : null}
-              {today.map((item: any, index: number) => (
-                <article key={item.id} id={`q-${item.id}`} className={`qa${read.has(item.id) ? " is-read" : ""}`}>
-                  <div className="qa-q"><span className="badge q">{index + 1}</span><div><strong>{index + 1}. {item.q}</strong><span className="qa-meta">{item.section}</span></div></div>
-                  <div className="qa-a"><span className="badge a">A</span><div className="answer">
-                    <HtmlBlock html={answerHtml(item)} />
-                    <div className="plan-actions">
-                      <Bookmark id={item.id} on={bookmarked.has(item.id)} onToggle={onBookmark} />
-                      <button type="button" className={`complete-btn${read.has(item.id) ? " is-done" : ""}`} onClick={() => onComplete(item.id, item.q)}><span aria-hidden="true">✓</span>{read.has(item.id) ? "Completed" : "Mark as Complete"}</button>
-                    </div>
-                  </div></div>
-                </article>
-              ))}
-              <div className="plan-gate">
-                <p>{read.size > today.length ? today.length : [...read].filter((id) => today.some((item: any) => item.id === id)).length}/{today.length} marked as read</p>
-                <button type="button" className="btn btn-primary" disabled={!ready} onClick={onStartQuiz}>Start practice quiz</button>
-                {ready ? null : <p className="plan-hint">Practice stays locked until all {today.length} questions are marked as read.</p>}
-              </div>
+              <span>/</span>
+              <span className="text-zinc-300 font-semibold">Day {currentDay}</span>
             </>
           )}
         </div>
-      </section>
-    </>
-  );
-}
 
-function QuizList({ quiz, passed, onChoice, onStartQuiz, onNext }: any) {
-  const answered = (quiz.picks || []).filter((pick: any) => Number.isInteger(pick)).length;
-  const correct = (quiz.marks || []).filter(Boolean).length;
-  const done = answered === quiz.items.length;
-  const open = passed || correct > PASS_SCORE;
-  const gate = done ? (
-    <div className="plan-gate">
-      <p className={`plan-note ${open ? "is-pass" : "is-fail"}`}>Your score: {correct}/{quiz.items.length}. {open ? (quiz.day < PLAN_DAYS ? `Day ${quiz.day + 1} is unlocked.` : "This was the last day.") : `Score more than ${PASS_SCORE} to unlock the next day.`}</p>
-      {open && quiz.day < PLAN_DAYS ? <button type="button" className="btn btn-primary" onClick={onNext}>Open Day {quiz.day + 1}</button> : null}
-      <button type="button" className="btn" onClick={onStartQuiz}>Try again</button>
-    </div>
-  ) : <p className="plan-note">Your score: {correct}/{quiz.items.length}. {quiz.items.length - answered} question{quiz.items.length - answered === 1 ? "" : "s"} still unanswered. The next day opens after every question is answered and the score is more than {PASS_SCORE}.</p>;
-  return (
-    <>
-      {gate}
-      {quiz.items.map((prompt: any, index: number) => {
-        const picked = quiz.picks?.[index];
-        const isAnswered = Number.isInteger(picked);
-        return (
-          <article className="qa practice-card" id={`quiz-q-${index}`} key={`${prompt.id}-${index}`}>
-            <div className="qa-q">
-              <span className="badge q">{index + 1}</span>
+        {/* 1. Track Overview Header Card */}
+        <div className="relative overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 sm:p-8 transition-colors">
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+            <div className="space-y-3 max-w-2xl">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-200">
+                  <TopicIcon className="h-5 w-5" />
+                </div>
+                <span className="rounded-full border border-zinc-700/60 bg-zinc-800/40 px-3 py-1 text-[11px] font-semibold tracking-wider text-zinc-300 uppercase">
+                  {hasDays ? `${totalDays}-Day Mastery Track` : "Comprehensive Catalog"}
+                </span>
+              </div>
+
               <div>
-                <QuizPrompt question={prompt.q || "Practice question"} />
-                <span className="qa-meta">{isAnswered ? (picked === prompt.correct ? "Correct" : "Wrong") : "Choose an answer"}</span>
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--ink)]">
+                  {topic.title} Interview Questions
+                </h1>
+                <p className="mt-1.5 text-sm text-[var(--ink-secondary)] leading-relaxed">
+                  {topic.lede || topic.heading}
+                </p>
+              </div>
+
+              {/* Meta metrics strip */}
+              <div className="flex flex-wrap items-center gap-4 pt-2 text-xs text-zinc-400">
+                <div className="flex items-center gap-1.5">
+                  <BookOpen className="h-3.5 w-3.5 text-zinc-400" />
+                  <span>
+                    {hasDays ? `Day ${currentDay}: ${today.length} Qs` : `${today.length} Total Questions`}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5 text-zinc-400" />
+                  <span>~{totalMins} min review time</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-zinc-400" />
+                  <span>Targeted SDE Prep</span>
+                </div>
               </div>
             </div>
-            <div className="choices">
-              {prompt.options.map((option: any, optionIndex: number) => {
-                let mark = "";
-                if (isAnswered && optionIndex === prompt.correct) mark = " is-correct";
-                else if (isAnswered && optionIndex === picked) mark = " is-wrong";
+
+            {/* Progress Metric Card */}
+            <div className="w-full md:w-64 rounded-xl border border-zinc-800 bg-[#0d0d10] p-4 space-y-3 shrink-0">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-zinc-400 font-medium">
+                  {hasDays ? `Day ${currentDay} Progress` : "Sheet Progress"}
+                </span>
+                <span className="font-mono font-semibold text-zinc-200">
+                  {completedCount}/{today.length} ({today.length ? Math.round((completedCount / today.length) * 100) : 0}%)
+                </span>
+              </div>
+
+              {/* Progress bar */}
+              <div className="h-2 w-full rounded-full bg-zinc-800 overflow-hidden">
+                <div
+                  className="h-full bg-zinc-200 dark:bg-zinc-100 transition-all duration-500 rounded-full"
+                  style={{
+                    width: `${today.length ? Math.round((completedCount / today.length) * 100) : 0}%`,
+                  }}
+                />
+              </div>
+
+              <p className="text-[11px] text-zinc-500 text-left">
+                {dayFinished
+                  ? isJs
+                    ? "All questions read! Quiz unlocked."
+                    : "Module completed. Continue forward."
+                  : `${today.length - completedCount} questions remaining.`}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Interviewer Tip Banner */}
+        {topic.tip && tipOpen && (
+          <aside className="relative flex items-start justify-between gap-4 rounded-xl border border-zinc-800 bg-[#0c0c0e] p-4 text-xs text-zinc-300">
+            <div className="flex items-start gap-3">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs font-bold">
+                💡
+              </span>
+              <div>
+                <p className="font-semibold text-zinc-100 uppercase tracking-wider text-[10px] mb-0.5">
+                  Interviewer Mindset
+                </p>
+                <p className="leading-relaxed text-zinc-300">{topic.tip}</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setTipOpen(false)}
+              className="text-zinc-500 hover:text-zinc-300 transition p-1"
+              aria-label="Dismiss tip"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </aside>
+        )}
+
+        {/* 2. Interactive Day Stepper (Only for Multi-Day Tracks) */}
+        {hasDays && (
+          <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4 sm:p-5 space-y-3">
+            <div className="flex items-center justify-between text-xs font-semibold text-[var(--ink)]">
+              <div className="flex items-center gap-2">
+                <span>10-Day Module Roadmap</span>
+                <span className="text-[11px] font-normal text-zinc-500">
+                  (Day {currentDay} of {totalDays})
+                </span>
+              </div>
+              <span className="text-[11px] font-mono text-zinc-400">
+                Score &gt; {PASS_SCORE} to unlock next
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-zinc-800">
+              {Array.from({ length: totalDays }, (_, index) => {
+                const dayNum = index + 1;
+                const isCurrent = dayNum === currentDay;
+                const isUnlocked = isJs
+                  ? isDayUnlocked(dayNum, state?.plan?.results)
+                  : readDayUnlocked(
+                      dayNum,
+                      state?.readPlans?.[topicId]?.read,
+                      questionsOf(topicId),
+                      READ_PLANS[topicId]?.perDay
+                    );
+                const isPassed = isJs
+                  ? Boolean(state?.plan?.results?.[dayNum]?.passed)
+                  : dayComplete(
+                      state?.readPlans?.[topicId]?.read?.[dayNum],
+                      questionsForDay(questionsOf(topicId), dayNum, READ_PLANS[topicId]?.perDay)
+                    );
+
                 return (
-                  <button type="button" key={option} className={`choice${mark}`} disabled={isAnswered} onClick={() => onChoice(index, optionIndex)}>
-                    <span>{["A", "B", "C", "D"][optionIndex]}</span>
-                    <span>{option}</span>
+                  <button
+                    key={dayNum}
+                    type="button"
+                    disabled={!isUnlocked}
+                    onClick={() => handlePickDay(dayNum)}
+                    className={`group relative flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-medium transition shrink-0 ${
+                      isCurrent
+                        ? "bg-zinc-800 border border-zinc-600 text-zinc-100 shadow-sm"
+                        : isUnlocked
+                        ? "border border-zinc-800 bg-[#111114] text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
+                        : "border border-zinc-850 bg-zinc-950/40 text-zinc-600 cursor-not-allowed opacity-50"
+                    }`}
+                  >
+                    {isPassed ? (
+                      <Check className="h-3.5 w-3.5 text-zinc-200" />
+                    ) : isUnlocked ? (
+                      <Circle className="h-3 w-3 text-zinc-500 group-hover:text-zinc-300" />
+                    ) : (
+                      <Lock className="h-3 w-3 text-zinc-600" />
+                    )}
+                    <span>Day {dayNum}</span>
                   </button>
                 );
               })}
             </div>
-            {isAnswered ? <div className="plan-actions"><p className={`plan-note ${picked === prompt.correct ? "is-pass" : "is-fail"}`}>{picked === prompt.correct ? "Correct." : "Wrong."}</p></div> : null}
-          </article>
-        );
-      })}
-      {gate}
-    </>
+          </div>
+        )}
+
+        {/* 3. Quiz Mode vs Deep Reading Mode */}
+        {activeQuiz ? (
+          <QuizSession
+            quiz={activeQuiz}
+            day={jsDay}
+            result={state?.plan?.results?.[jsDay]}
+            onChoice={(questionIndex: number, optionIndex: number) =>
+              dispatch({ type: "pick-choice", questionIndex, optionIndex })
+            }
+            onStartQuiz={() => dispatch({ type: "start-quiz", day: jsDay })}
+            onNext={() => router.push(`/javascript/day/${jsDay + 1}`)}
+          />
+        ) : (
+          <>
+            {/* 4. Filter & Practice Control Toolbar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-3 sm:p-4">
+              {/* Left Search input */}
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
+                <input
+                  type="text"
+                  placeholder={`Search ${today.length} questions in this view...`}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full rounded-xl border border-[var(--line)] bg-[var(--paper)] py-1.5 pl-8 pr-8 text-xs text-[var(--ink)] placeholder-[var(--muted)] focus:border-zinc-500 focus:outline-none"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* Right Filter Pills */}
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Difficulty selector */}
+                <div className="flex items-center rounded-xl border border-[var(--line)] bg-[var(--paper)] p-1 text-[11px]">
+                  {["all", "basic", "intermediate", "advanced"].map((lvl) => (
+                    <button
+                      key={lvl}
+                      type="button"
+                      onClick={() => setDifficultyFilter(lvl)}
+                      className={`px-2.5 py-1 rounded-lg capitalize transition ${
+                        difficultyFilter === lvl
+                          ? "bg-zinc-800 text-zinc-100 font-medium border border-zinc-700"
+                          : "text-zinc-400 hover:text-zinc-200"
+                      }`}
+                    >
+                      {lvl === "all" ? "All Levels" : lvl}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Status selector */}
+                <div className="flex items-center rounded-xl border border-[var(--line)] bg-[var(--paper)] p-1 text-[11px]">
+                  {[
+                    { key: "all", label: "All" },
+                    { key: "todo", label: "To Do" },
+                    { key: "done", label: "Done" },
+                    { key: "starred", label: "★" },
+                  ].map((st) => (
+                    <button
+                      key={st.key}
+                      type="button"
+                      onClick={() => setStatusFilter(st.key)}
+                      className={`px-2.5 py-1 rounded-lg transition ${
+                        statusFilter === st.key
+                          ? "bg-zinc-800 text-zinc-100 font-medium border border-zinc-700"
+                          : "text-zinc-400 hover:text-zinc-200"
+                      }`}
+                    >
+                      {st.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Expand / Collapse All */}
+                <button
+                  type="button"
+                  onClick={handleToggleAll}
+                  className="flex items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[var(--paper)] px-3 py-1.5 text-[11px] font-medium text-zinc-300 hover:border-zinc-700 hover:text-white transition"
+                  title="Toggle all question answers"
+                >
+                  <ChevronsUpDown className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">
+                    {expandedIds.size === today.length ? "Collapse All" : "Expand All"}
+                  </span>
+                </button>
+
+                {/* Add Custom Note */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEditor({
+                      id: crypto.randomUUID(),
+                      q: "",
+                      a: "",
+                      level: "basic",
+                    })
+                  }
+                  className="flex items-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-[11px] font-medium text-zinc-100 hover:bg-zinc-700 transition"
+                  title="Add custom question or personal note"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Add Note</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Questions List Count */}
+            <div className="flex items-center justify-between text-xs text-zinc-400 px-1">
+              <span>
+                Showing {filteredQuestions.length} of {today.length} questions
+              </span>
+              {filteredQuestions.length < today.length && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setDifficultyFilter("all");
+                    setStatusFilter("all");
+                  }}
+                  className="text-zinc-300 hover:underline"
+                >
+                  Reset filters
+                </button>
+              )}
+            </div>
+
+            {/* 5. Modern Question Accordions */}
+            <div className="space-y-3">
+              {filteredQuestions.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-[var(--line)] bg-[var(--surface)] p-12 text-center space-y-3">
+                  <p className="text-sm font-medium text-[var(--ink)]">
+                    No questions found matching your filter criteria.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setDifficultyFilter("all");
+                      setStatusFilter("all");
+                    }}
+                    className="inline-flex rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2 text-xs font-semibold text-zinc-100 hover:bg-zinc-700 transition"
+                  >
+                    Clear all filters
+                  </button>
+                </div>
+              ) : (
+                filteredQuestions.map((item: any, index: number) => {
+                  const isExpanded = expandedIds.has(item.id);
+                  const isCompleted = readIds.has(item.id);
+                  const isBookmarked = bookmarked.has(item.id);
+                  const diffConfig =
+                    DIFFICULTY_CONFIG[item.level] || DIFFICULTY_CONFIG.basic;
+
+                  return (
+                    <article
+                      key={item.id}
+                      id={`q-${item.id}`}
+                      className={`overflow-hidden rounded-2xl border transition-all duration-200 ${
+                        isCompleted
+                          ? "border-zinc-800/80 bg-[var(--surface)]"
+                          : "border-[var(--line)] bg-[var(--surface)] hover:border-zinc-700"
+                      }`}
+                    >
+                      {/* Accordion Header Row */}
+                      <div
+                        className="flex items-start sm:items-center justify-between gap-3 p-4 sm:p-5 cursor-pointer select-none"
+                        onClick={() => handleAccordionToggle(item.id)}
+                      >
+                        <div className="flex items-start sm:items-center gap-3.5 min-w-0">
+                          {/* Completion Toggle Button */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleComplete(item.id, item.q);
+                            }}
+                            className={`mt-0.5 sm:mt-0 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border transition ${
+                              isCompleted
+                                ? "border-zinc-600 bg-zinc-800 text-zinc-100"
+                                : "border-zinc-700/80 bg-[#121214] text-transparent hover:border-zinc-500"
+                            }`}
+                            title={isCompleted ? "Mark incomplete" : "Mark completed"}
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                          </button>
+
+                          {/* Index Pill */}
+                          <span className="font-mono text-xs text-zinc-500 shrink-0 mt-0.5 sm:mt-0">
+                            #{String(index + 1).padStart(2, "0")}
+                          </span>
+
+                          {/* Title & Metadata */}
+                          <div className="min-w-0">
+                            <h2
+                              className={`text-sm sm:text-base font-semibold leading-snug transition-colors ${
+                                isCompleted
+                                  ? "text-zinc-400 line-through decoration-zinc-600"
+                                  : "text-[var(--ink)]"
+                              }`}
+                            >
+                              {item.q}
+                            </h2>
+
+                            <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                              {/* Level Badge */}
+                              <span
+                                className={`rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider font-semibold ${diffConfig.badgeClass}`}
+                              >
+                                {diffConfig.label}
+                              </span>
+
+                              {/* Section Badge */}
+                              {item.section && (
+                                <span className="text-[11px] text-zinc-500">
+                                  {item.section}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right Tools: Bookmark & Chevron */}
+                        <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleBookmark(item.id);
+                            }}
+                            className={`p-1.5 rounded-lg border border-transparent hover:border-zinc-800 hover:bg-zinc-850 transition ${
+                              isBookmarked
+                                ? "text-zinc-100 fill-zinc-100"
+                                : "text-zinc-500 hover:text-zinc-300"
+                            }`}
+                            title={isBookmarked ? "Remove bookmark" : "Bookmark question"}
+                          >
+                            <Star
+                              className={`h-4 w-4 ${isBookmarked ? "fill-zinc-100 text-zinc-100" : ""}`}
+                            />
+                          </button>
+
+                          <button
+                            type="button"
+                            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 transition"
+                            aria-label={isExpanded ? "Collapse" : "Expand"}
+                          >
+                            {isExpanded ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Accordion Body: Explanation, Code, & Controls */}
+                      {isExpanded && (
+                        <div className="border-t border-[var(--line)] bg-[var(--paper)]/40 p-5 sm:p-6 space-y-4">
+                          {/* Pure React Answer Render */}
+                          <div className="answer">
+                            <RichAnswer content={answerHtml(item)} />
+                          </div>
+
+                          {/* Action Footer for this Question */}
+                          <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[var(--line)]/60 text-xs">
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleToggleComplete(item.id, item.q)}
+                                className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition border ${
+                                  isCompleted
+                                    ? "bg-zinc-800 border-zinc-600 text-zinc-100"
+                                    : "bg-zinc-900 dark:bg-zinc-800 border-zinc-700 text-zinc-200 hover:border-zinc-500"
+                                }`}
+                              >
+                                <Check className="h-3.5 w-3.5" />
+                                <span>{isCompleted ? "Completed" : "Mark as Complete"}</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleToggleBookmark(item.id)}
+                                className="flex items-center gap-1.5 rounded-xl border border-[var(--line)] bg-[var(--surface)] px-3 py-1.5 text-xs font-medium text-zinc-300 hover:border-zinc-700 hover:text-white transition"
+                              >
+                                <Star
+                                  className={`h-3.5 w-3.5 ${
+                                    isBookmarked ? "fill-zinc-100 text-zinc-100" : ""
+                                  }`}
+                                />
+                                <span>{isBookmarked ? "Bookmarked" : "Bookmark"}</span>
+                              </button>
+                            </div>
+
+                            {/* User custom note actions */}
+                            {item.source === "you" && (
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setEditor(item)}
+                                  className="flex items-center gap-1 text-zinc-400 hover:text-zinc-200 transition"
+                                >
+                                  <Edit3 className="h-3.5 w-3.5" /> Edit
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    dispatch({ type: "delete-note", id: item.id })
+                                  }
+                                  className="flex items-center gap-1 text-rose-500 hover:text-rose-400 transition ml-2"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" /> Delete
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </article>
+                  );
+                })
+              )}
+            </div>
+
+            {/* 6. Day Completion / Progression Action Footer */}
+            {hasDays && (
+              <div className="sticky bottom-4 z-20 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-zinc-800 bg-[#0a0a0c]/95 backdrop-blur-md p-4 sm:p-5 shadow-2xl">
+                <div>
+                  <div className="text-xs font-semibold text-zinc-200">
+                    Day {currentDay} Checklist: {completedCount} / {today.length} Read
+                  </div>
+                  <p className="text-[11px] text-zinc-500">
+                    {dayFinished
+                      ? isJs
+                        ? "Every question marked as read! Practice quiz is ready."
+                        : `All ${today.length} questions completed for Day ${currentDay}.`
+                      : `Mark all ${today.length} questions complete to open the next milestone.`}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2.5 shrink-0">
+                  {currentDay > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handlePickDay(currentDay - 1)}
+                      className="flex items-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-800 px-3.5 py-2 text-xs font-semibold text-zinc-200 hover:bg-zinc-700 transition"
+                    >
+                      <ArrowLeft className="h-3.5 w-3.5" />
+                      <span>Day {currentDay - 1}</span>
+                    </button>
+                  )}
+
+                  {isJs ? (
+                    <button
+                      type="button"
+                      disabled={!dayFinished}
+                      onClick={() => dispatch({ type: "start-quiz", day: jsDay })}
+                      className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition border ${
+                        dayFinished
+                          ? "bg-zinc-800 border-zinc-600 text-zinc-100 hover:bg-zinc-700 shadow-sm"
+                          : "bg-zinc-900 border-zinc-800 text-zinc-600 cursor-not-allowed"
+                      }`}
+                    >
+                      <Sparkles className="h-3.5 w-3.5" />
+                      <span>Start Day {currentDay} Quiz</span>
+                    </button>
+                  ) : currentDay < totalDays ? (
+                    <button
+                      type="button"
+                      disabled={!dayFinished}
+                      onClick={() => handlePickDay(currentDay + 1)}
+                      className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition border ${
+                        dayFinished
+                          ? "bg-zinc-800 border-zinc-600 text-zinc-100 hover:bg-zinc-700 shadow-sm"
+                          : "bg-zinc-900 border-zinc-800 text-zinc-600 cursor-not-allowed"
+                      }`}
+                    >
+                      <span>Proceed to Day {currentDay + 1}</span>
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* 7. Key Takeaways Section */}
+        {topic.takeaways?.length ? (
+          <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 space-y-4">
+            <h3 className="text-base font-bold text-[var(--ink)] flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-zinc-400" /> Key Architectural Takeaways
+            </h3>
+            <ul className="space-y-2 text-xs sm:text-sm text-[var(--ink-secondary)] leading-relaxed">
+              {topic.takeaways.map((takeaway: string) => (
+                <li key={takeaway} className="flex items-start gap-2.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-zinc-500 mt-2 shrink-0" />
+                  <span>{takeaway}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </div>
+
+      {/* Note Editor Modal */}
+      {editor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg rounded-2xl border border-zinc-800 bg-[#0d0d10] p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+              <h3 className="text-sm font-bold text-zinc-100">
+                {editor.q ? "Edit Note / Question" : "Add Custom Question"}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setEditor(null)}
+                className="text-zinc-500 hover:text-zinc-300"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                const data = new FormData(event.currentTarget);
+                dispatch({
+                  type: "save-note",
+                  note: {
+                    id: editor.id,
+                    topicId,
+                    level: data.get("level"),
+                    q: String(data.get("q") || "").trim(),
+                    a: String(data.get("a") || "").trim(),
+                  },
+                });
+                setEditor(null);
+              }}
+              className="space-y-4"
+            >
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-zinc-300">Question / Prompt</label>
+                <textarea
+                  name="q"
+                  defaultValue={editor.q}
+                  required
+                  rows={2}
+                  className="w-full rounded-xl border border-zinc-800 bg-[#141418] p-3 text-xs text-zinc-200 placeholder-zinc-600 focus:border-zinc-500 focus:outline-none"
+                  placeholder="Enter the interview question..."
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-zinc-300">Answer / Explanation & Code</label>
+                <textarea
+                  name="a"
+                  defaultValue={editor.a}
+                  required
+                  rows={6}
+                  className="w-full rounded-xl border border-zinc-800 bg-[#141418] p-3 text-xs text-zinc-200 placeholder-zinc-600 focus:border-zinc-500 focus:outline-none font-mono"
+                  placeholder="Enter explanation, key points, or code snippets..."
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-zinc-300">Difficulty Level</label>
+                <select
+                  name="level"
+                  defaultValue={editor.level || "basic"}
+                  className="w-full rounded-xl border border-zinc-800 bg-[#141418] p-2.5 text-xs text-zinc-200 focus:border-zinc-500 focus:outline-none"
+                >
+                  <option value="basic">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                </select>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditor(null)}
+                  className="rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-xs font-medium text-zinc-300 hover:bg-zinc-800 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2 text-xs font-semibold text-zinc-100 hover:bg-zinc-700 transition"
+                >
+                  Save Note
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </HomeLayout>
   );
 }
 
-function ReadLesson({ topic, day, today, readIds, bookmarked, onBookmark, onComplete, onNext }: any) {
-  const configDays = readPlanDayCount(topic.id);
-  const perDay = READ_PLANS[topic.id].perDay;
-  const read = new Set(readIds || []);
-  const done = today.every((item: any) => read.has(item.id));
-  const start = (day - 1) * perDay + 1;
-  const count = today.filter((item: any) => read.has(item.id)).length;
+// ---------------------------------------------------------------------------
+// Practice Quiz Mode Component (Pure Stealth Dark Layout)
+// ---------------------------------------------------------------------------
+function QuizSession({
+  quiz,
+  day,
+  result,
+  onChoice,
+  onStartQuiz,
+  onNext,
+}: {
+  quiz: any;
+  day: number;
+  result: any;
+  onChoice: (qIdx: number, optIdx: number) => void;
+  onStartQuiz: () => void;
+  onNext: () => void;
+}) {
+  const answered = (quiz.picks || []).filter((pick: any) =>
+    Number.isInteger(pick)
+  ).length;
+  const correct = (quiz.marks || []).filter(Boolean).length;
+  const isAllAnswered = answered === quiz.items.length;
+  const isPassed = Boolean(result?.passed) || correct > PASS_SCORE;
+
   return (
-    <>
-      <header className="hero hero-card">
-        <div>
-          <TopicBadge id={topic.id} />
-          <p className="eyebrow">{topic.title} plan · Day {day} of {configDays}</p>
-          <h1>Day {day}</h1>
-          <p className="lede">Questions {start}–{start + today.length - 1}. Mark each one complete after you have read it.</p>
-          <div className="hero-meta"><span>{today.length} to read</span><span>{count}/{today.length} read</span><span>Day {day} of {configDays}</span></div>
-        </div>
-        <HeroArt />
-      </header>
-      <TipBanner>Read these {today.length} questions carefully. The next day opens only after every one is marked as read.</TipBanner>
-      <section className="quiz">
-        <div className="quiz-head"><h2>Read deeply</h2><span className="level-pill">Read</span></div>
-        <div className="quiz-list">
-          <p className={`plan-note${done ? " is-pass" : ""}`}>{done ? (day < configDays ? `All ${today.length} questions are read. Day ${day + 1} is unlocked.` : `You finished the ${configDays}-day plan.`) : `${count}/{today.length} marked as read.`}</p>
-          {today.map((item: any, index: number) => (
-            <article key={item.id} id={`q-${item.id}`} className={`qa${read.has(item.id) ? " is-read" : ""}`}>
-              <div className="qa-q"><span className="badge q">{start + index}</span><div><strong>{start + index}. {item.q}</strong><span className="qa-meta">{item.section}</span></div></div>
-              <div className="qa-a"><span className="badge a">A</span><div className="answer">
-                <HtmlBlock html={answerHtml(item)} />
-                <div className="plan-actions">
-                  <Bookmark id={item.id} on={bookmarked.has(item.id)} onToggle={onBookmark} />
-                  <button type="button" className={`complete-btn${read.has(item.id) ? " is-done" : ""}`} onClick={() => onComplete(item.id, item.q)}><span aria-hidden="true">✓</span>{read.has(item.id) ? "Completed" : "Mark as Complete"}</button>
-                </div>
-              </div></div>
-            </article>
-          ))}
-          {day < configDays ? (
-            <div className="plan-gate">
-              <button type="button" className="btn btn-primary" disabled={!done} onClick={onNext}>Open Day {day + 1}</button>
-              {done ? null : <p className="plan-hint">Day {day + 1} stays locked until all {today.length} questions are marked as read.</p>}
+    <div className="space-y-6">
+      {/* Quiz Header Banner */}
+      <div className="rounded-2xl border border-zinc-800 bg-[#0d0d10] p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="rounded-full border border-zinc-700 bg-zinc-800 px-3 py-0.5 text-[10px] font-semibold tracking-wider text-zinc-300 uppercase">
+                Active Assessment
+              </span>
+              <span className="text-xs text-zinc-400">
+                Pass mark: &gt; {PASS_SCORE} / {quiz.items.length}
+              </span>
             </div>
-          ) : null}
+            <h2 className="text-xl font-bold text-zinc-100 mt-2">
+              Day {day} Practice Quiz
+            </h2>
+            <p className="text-xs text-zinc-400 mt-0.5">
+              Select the best answer for each question. Answers lock immediately upon selection.
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-zinc-800 bg-[#121215] p-3 text-center min-w-[120px]">
+            <span className="text-[10px] uppercase font-semibold text-zinc-500 tracking-wider">
+              Score
+            </span>
+            <div className="text-xl font-bold font-mono text-zinc-100">
+              {correct} / {quiz.items.length}
+            </div>
+            <span className="text-[10px] text-zinc-400">
+              {answered}/{quiz.items.length} Answered
+            </span>
+          </div>
         </div>
-      </section>
-    </>
+
+        {/* Progress Bar */}
+        <div className="h-1.5 w-full rounded-full bg-zinc-800 overflow-hidden">
+          <div
+            className="h-full bg-zinc-200 transition-all duration-300"
+            style={{
+              width: `${Math.round((answered / quiz.items.length) * 100)}%`,
+            }}
+          />
+        </div>
+
+        {/* Settle Message if finished */}
+        {isAllAnswered && (
+          <div
+            className={`rounded-xl border p-4 text-xs space-y-2 ${
+              isPassed
+                ? "border-zinc-700 bg-zinc-900/80 text-zinc-200"
+                : "border-zinc-800 bg-zinc-950 text-zinc-400"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-sm text-zinc-100">
+                {isPassed
+                  ? `🎉 Passed! You scored ${correct}/${quiz.items.length}.`
+                  : `Score: ${correct}/${quiz.items.length}. Pass mark is > ${PASS_SCORE}.`}
+              </span>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={onStartQuiz}
+                  className="flex items-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-200 hover:bg-zinc-700 transition"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" /> Retake
+                </button>
+
+                {isPassed && day < PLAN_DAYS && (
+                  <button
+                    type="button"
+                    onClick={onNext}
+                    className="flex items-center gap-1.5 rounded-xl border border-zinc-600 bg-zinc-800 px-4 py-1.5 text-xs font-semibold text-zinc-100 hover:bg-zinc-700 transition"
+                  >
+                    <span>Open Day {day + 1}</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Quiz Questions List */}
+      <div className="space-y-4">
+        {quiz.items.map((prompt: any, qIdx: number) => {
+          const picked = quiz.picks?.[qIdx];
+          const isAnswered = Number.isInteger(picked);
+          const isCorrect = isAnswered && picked === prompt.correct;
+
+          return (
+            <article
+              key={`${prompt.id}-${qIdx}`}
+              id={`quiz-q-${qIdx}`}
+              className="rounded-2xl border border-zinc-800 bg-[#0d0d10] p-5 sm:p-6 space-y-4"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-semibold text-zinc-500">
+                      Q{qIdx + 1} of {quiz.items.length}
+                    </span>
+                    {isAnswered && (
+                      <span
+                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                          isCorrect
+                            ? "border-zinc-600 bg-zinc-800 text-zinc-200"
+                            : "border-zinc-800 bg-zinc-900 text-zinc-400"
+                        }`}
+                      >
+                        {isCorrect ? "Correct" : "Incorrect"}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-sm font-semibold text-zinc-200">
+                    <QuizPrompt question={prompt.q || "Practice Question"} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Multiple Choice Options */}
+              <div className="grid grid-cols-1 gap-2 pt-2">
+                {prompt.options.map((option: string, optIdx: number) => {
+                  const letter = ["A", "B", "C", "D"][optIdx];
+                  const isThisPicked = picked === optIdx;
+                  const isThisCorrect = prompt.correct === optIdx;
+
+                  let optionClass =
+                    "border-zinc-800 bg-[#121215] text-zinc-300 hover:border-zinc-700 hover:bg-zinc-800/60";
+
+                  if (isAnswered) {
+                    if (isThisCorrect) {
+                      optionClass =
+                        "border-zinc-500 bg-zinc-800 text-zinc-100 font-semibold shadow-sm";
+                    } else if (isThisPicked && !isThisCorrect) {
+                      optionClass =
+                        "border-zinc-800 bg-zinc-950 text-zinc-500 line-through opacity-70";
+                    } else {
+                      optionClass =
+                        "border-zinc-850 bg-zinc-950/40 text-zinc-600 cursor-not-allowed";
+                    }
+                  }
+
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      disabled={isAnswered}
+                      onClick={() => onChoice(qIdx, optIdx)}
+                      className={`flex items-start gap-3 rounded-xl border p-3 text-left text-xs transition select-none ${optionClass}`}
+                    >
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-800 text-[10px] font-bold text-zinc-300">
+                        {letter}
+                      </span>
+                      <span className="leading-relaxed mt-0.5">{option}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </div>
   );
 }

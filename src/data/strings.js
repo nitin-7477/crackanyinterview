@@ -1,18 +1,18 @@
 export const strings = {
   id: "strings",
-  title: "Strings",
-  heading: "10-day string practice",
-  tagline: "From length and slice to subsequences",
-  lede: "A 10-day JavaScript string practice, easy checks first and the harder algorithms last. Each question has a short solution you can paste into the console.",
-  tip: "Try the function before you open the answer. Then change the sample input and run it again.",
+  title: "DSA & Algorithms",
+  heading: "LeetCode & HackerRank Interview Patterns",
+  tagline: "Arrays, Two Pointers, Trees, Graphs, DP & Strings",
+  lede: "Comprehensive Data Structures & Algorithms sheet covering top LeetCode 75 and HackerRank interview challenges with optimal JavaScript solutions.",
+  tip: "Practice the algorithm before opening the solution. Trace time and space complexity (Big-O) on every drill.",
   practice: {
     title: "Note",
-    body: "These prompts follow the usual string exercise list, from basic edits to hard matching problems. Repeated titles are covered once.",
+    body: "These prompts follow core coding assessment patterns from FAANG, LeetCode, and HackerRank: Two Pointers, Sliding Window, Linked Lists, Trees, Graphs, and DP.",
   },
   takeaways: [
-    "Strings are immutable. Reverse, swap, and sort by copying the characters into an array.",
-    "slice is the method to prefer. substring treats negative indexes differently, and substr counts a length.",
-    "Most counting problems are one pass and a map. Most generation problems are recursion with a take-or-skip choice.",
+    "Most array and string search problems are O(N) using a Hash Map, Two Pointers, or Sliding Window.",
+    "Binary Trees: BFS uses a Queue; DFS uses Recursion / Stack. Check base cases (node === null) first.",
+    "Dynamic Programming: Break problem into overlapping subproblems with memoization or tabulation.",
   ],
   sections: [
   {
@@ -807,6 +807,110 @@ export const strings = {
         "id": "str-longest-unique",
         "q": "How do you find the longest substring without a repeated character?",
         "a": "<pre><code>function longestUnique(s) {\n  const last = new Map();\n  let start = 0;\n  let best = 0;\n  for (let i = 0; i &lt; s.length; i += 1) {\n    if (last.has(s[i]) &amp;&amp; last.get(s[i]) &gt;= start) start = last.get(s[i]) + 1;\n    last.set(s[i], i);\n    best = Math.max(best, i - start + 1);\n  }\n  return best;\n}\nconsole.log(longestUnique(\"abcabcbb\"));</code></pre>\n<p><strong>Output</strong></p>\n<p><code>3</code></p>\n<p>Remember the last index of each character. When it appears again inside the current window, move the start to just after the old copy.</p>"
+      }
+    ]
+  },
+  {
+    "title": "Day 11 · Arrays & Two Pointers (LeetCode Top 75)",
+    "level": "intermediate",
+    "questions": [
+      {
+        "id": "dsa-two-sum",
+        "q": "How do you solve Two Sum in O(N) time? (LeetCode #1)",
+        "a": "<pre><code>function twoSum(nums, target) {\n  const seen = new Map();\n  for (let i = 0; i < nums.length; i++) {\n    const complement = target - nums[i];\n    if (seen.has(complement)) return [seen.get(complement), i];\n    seen.set(nums[i], i);\n  }\n  return [];\n}\nconsole.log(twoSum([2, 7, 11, 15], 9));</code></pre>\n<p><strong>Output</strong></p>\n<p><code>[0, 1]</code></p>\n<p>Using a Hash Map gives O(N) time and O(N) space. We store each number's index and check for its complement in a single pass.</p>"
+      },
+      {
+        "id": "dsa-3sum",
+        "q": "How do you solve 3Sum without duplicate triplets? (LeetCode #15)",
+        "a": "<pre><code>function threeSum(nums) {\n  nums.sort((a, b) => a - b);\n  const res = [];\n  for (let i = 0; i < nums.length - 2; i++) {\n    if (i > 0 && nums[i] === nums[i - 1]) continue;\n    let l = i + 1, r = nums.length - 1;\n    while (l < r) {\n      const sum = nums[i] + nums[l] + nums[r];\n      if (sum === 0) {\n        res.push([nums[i], nums[l], nums[r]]);\n        while (l < r && nums[l] === nums[l + 1]) l++;\n        while (l < r && nums[r] === nums[r - 1]) r--;\n        l++; r--;\n      } else if (sum < 0) l++;\n      else r--;\n    }\n  }\n  return res;\n}\nconsole.log(threeSum([-1, 0, 1, 2, -1, -4]));</code></pre>\n<p><strong>Output</strong></p>\n<p><code>[[-1, -1, 2], [-1, 0, 1]]</code></p>\n<p>Sort the array first, then fix one element and use Two Pointers. Skip duplicates on i, left, and right to achieve O(N^2) time with zero duplicate triplets.</p>"
+      },
+      {
+        "id": "dsa-container-water",
+        "q": "How do you find the Container With Most Water? (LeetCode #11)",
+        "a": "<pre><code>function maxArea(height) {\n  let left = 0, right = height.length - 1, max = 0;\n  while (left < right) {\n    const w = right - left;\n    const h = Math.min(height[left], height[right]);\n    max = Math.max(max, w * h);\n    if (height[left] < height[right]) left++;\n    else right--;\n  }\n  return max;\n}\nconsole.log(maxArea([1, 8, 6, 2, 5, 4, 8, 3, 7]));</code></pre>\n<p><strong>Output</strong></p>\n<p><code>49</code></p>\n<p>Start with widest pointers. Always advance the pointer pointing to the shorter vertical bar, since the height is constrained by the shorter line.</p>"
+      },
+      {
+        "id": "dsa-trapping-rain-water",
+        "q": "How do you solve Trapping Rain Water in O(1) space? (LeetCode #42)",
+        "a": "<pre><code>function trap(height) {\n  let l = 0, r = height.length - 1;\n  let leftMax = 0, rightMax = 0, total = 0;\n  while (l < r) {\n    if (height[l] < height[r]) {\n      if (height[l] >= leftMax) leftMax = height[l];\n      else total += leftMax - height[l];\n      l++;\n    } else {\n      if (height[r] >= rightMax) rightMax = height[r];\n      else total += rightMax - height[r];\n      r--;\n    }\n  }\n  return total;\n}\nconsole.log(trap([0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1]));</code></pre>\n<p><strong>Output</strong></p>\n<p><code>6</code></p>\n<p>Using Two Pointers maintaining leftMax and rightMax solves the problem in O(N) time and O(1) space without extra prefix arrays.</p>"
+      },
+      {
+        "id": "dsa-max-subarray",
+        "q": "How do you find Maximum Subarray using Kadane's Algorithm? (LeetCode #53)",
+        "a": "<pre><code>function maxSubArray(nums) {\n  let cur = nums[0], max = nums[0];\n  for (let i = 1; i < nums.length; i++) {\n    cur = Math.max(nums[i], cur + nums[i]);\n    max = Math.max(max, cur);\n  }\n  return max;\n}\nconsole.log(maxSubArray([-2, 1, -3, 4, -1, 2, 1, -5, 4]));</code></pre>\n<p><strong>Output</strong></p>\n<p><code>6</code></p>\n<p>Kadane's algorithm computes max subarray sum in O(N) time and O(1) space by resetting the running sum whenever it drops below the current element.</p>"
+      }
+    ]
+  },
+  {
+    "title": "Day 12 · Linked Lists & Stacks (LeetCode Classics)",
+    "level": "intermediate",
+    "questions": [
+      {
+        "id": "dsa-reverse-linked-list",
+        "q": "How do you reverse a singly linked list iteratively in O(1) space? (LeetCode #206)",
+        "a": "<pre><code>function reverseList(head) {\n  let prev = null, curr = head;\n  while (curr) {\n    const nextTemp = curr.next;\n    curr.next = prev;\n    prev = curr;\n    curr = nextTemp;\n  }\n  return prev;\n}</code></pre>\n<p><strong>Explanation</strong></p>\n<p>Store next pointer, reassign curr.next to prev, and advance both pointers forward. Takes O(N) time and O(1) space.</p>"
+      },
+      {
+        "id": "dsa-detect-cycle",
+        "q": "How do you detect a cycle in a Linked List using Floyd's Tortoise and Hare? (LeetCode #141)",
+        "a": "<pre><code>function hasCycle(head) {\n  let slow = head, fast = head;\n  while (fast && fast.next) {\n    slow = slow.next;\n    fast = fast.next.next;\n    if (slow === fast) return true;\n  }\n  return false;\n}</code></pre>\n<p><strong>Explanation</strong></p>\n<p>Fast pointer moves at 2x speed. If a cycle exists, fast will inevitably lap slow inside the loop in O(N) time without extra memory.</p>"
+      },
+      {
+        "id": "dsa-valid-parentheses",
+        "q": "How do you validate balanced parentheses using a Stack? (LeetCode #20)",
+        "a": "<pre><code>function isValid(s) {\n  const stack = [];\n  const map = { ')': '(', '}': '{', ']': '[' };\n  for (const ch of s) {\n    if (ch === '(' || ch === '{' || ch === '[') stack.push(ch);\n    else if (stack.pop() !== map[ch]) return false;\n  }\n  return stack.length === 0;\n}\nconsole.log(isValid(\"()[]{}\"), isValid(\"(]\"));</code></pre>\n<p><strong>Output</strong></p>\n<p><code>true false</code></p>\n<p>Opening brackets are pushed to stack; closing brackets must match top of stack. O(N) time and O(N) space.</p>"
+      },
+      {
+        "id": "dsa-daily-temperatures",
+        "q": "How do you solve Daily Temperatures using a Monotonic Stack? (LeetCode #739)",
+        "a": "<pre><code>function dailyTemperatures(temps) {\n  const res = new Array(temps.length).fill(0);\n  const stack = []; // indices of decreasing temperatures\n  for (let i = 0; i < temps.length; i++) {\n    while (stack.length && temps[i] > temps[stack[stack.length - 1]]) {\n      const prevIdx = stack.pop();\n      res[prevIdx] = i - prevIdx;\n    }\n    stack.push(i);\n  }\n  return res;\n}\nconsole.log(dailyTemperatures([73, 74, 75, 71, 69, 72, 76, 73]));</code></pre>\n<p><strong>Output</strong></p>\n<p><code>[1, 1, 4, 2, 1, 1, 0, 0]</code></p>\n<p>A monotonic decreasing stack stores indices. When a warmer temperature is encountered, indices are popped and day difference recorded in O(N) time.</p>"
+      }
+    ]
+  },
+  {
+    "title": "Day 13 · Trees & Graphs (LeetCode Blind 75)",
+    "level": "advanced",
+    "questions": [
+      {
+        "id": "dsa-invert-binary-tree",
+        "q": "How do you Invert a Binary Tree? (LeetCode #226)",
+        "a": "<pre><code>function invertTree(root) {\n  if (!root) return null;\n  const temp = root.left;\n  root.left = invertTree(root.right);\n  root.right = invertTree(temp);\n  return root;\n}</code></pre>\n<p><strong>Explanation</strong></p>\n<p>Recursively swap left and right subtrees. Each node is visited once in O(N) time with O(H) call stack space.</p>"
+      },
+      {
+        "id": "dsa-max-depth-tree",
+        "q": "How do you find the Maximum Depth of a Binary Tree? (LeetCode #104)",
+        "a": "<pre><code>function maxDepth(root) {\n  if (!root) return 0;\n  return 1 + Math.max(maxDepth(root.left), maxDepth(root.right));\n}</code></pre>\n<p><strong>Explanation</strong></p>\n<p>Post-order traversal computes height of left and right subtrees and adds 1 for the current node. O(N) time complexity.</p>"
+      },
+      {
+        "id": "dsa-level-order-traversal",
+        "q": "How do you implement Binary Tree Level Order Traversal with BFS? (LeetCode #102)",
+        "a": "<pre><code>function levelOrder(root) {\n  if (!root) return [];\n  const res = [], queue = [root];\n  while (queue.length) {\n    const levelSize = queue.length, level = [];\n    for (let i = 0; i < levelSize; i++) {\n      const node = queue.shift();\n      level.push(node.val);\n      if (node.left) queue.push(node.left);\n      if (node.right) queue.push(node.right);\n    }\n    res.push(level);\n  }\n  return res;\n}</code></pre>\n<p><strong>Explanation</strong></p>\n<p>Breadth-First Search using a Queue. We snapshot queue.length at each level boundary to separate tree levels in O(N) time.</p>"
+      },
+      {
+        "id": "dsa-number-of-islands",
+        "q": "How do you count the Number of Islands using DFS? (LeetCode #200)",
+        "a": "<pre><code>function numIslands(grid) {\n  if (!grid || !grid.length) return 0;\n  let count = 0;\n  const dfs = (r, c) => {\n    if (r < 0 || c < 0 || r >= grid.length || c >= grid[0].length || grid[r][c] !== '1') return;\n    grid[r][c] = '0'; // mark visited\n    dfs(r + 1, c); dfs(r - 1, c); dfs(r, c + 1); dfs(r, c - 1);\n  };\n  for (let r = 0; r < grid.length; r++) {\n    for (let c = 0; c < grid[0].length; c++) {\n      if (grid[r][c] === '1') { count++; dfs(r, c); }\n    }\n  }\n  return count;\n}\nconsole.log(numIslands([\n  ['1', '1', '0', '0'],\n  ['1', '1', '0', '0'],\n  ['0', '0', '1', '0']\n]));</code></pre>\n<p><strong>Output</strong></p>\n<p><code>2</code></p>\n<p>When '1' is encountered, trigger DFS to sink all connected land to '0' to avoid re-visitation. O(M*N) time complexity.</p>"
+      }
+    ]
+  },
+  {
+    "title": "Day 14 · Dynamic Programming & HackerRank Challenges",
+    "level": "advanced",
+    "questions": [
+      {
+        "id": "dsa-coin-change",
+        "q": "How do you solve the Coin Change problem using Bottom-Up DP? (LeetCode #322)",
+        "a": "<pre><code>function coinChange(coins, amount) {\n  const dp = new Array(amount + 1).fill(Infinity);\n  dp[0] = 0;\n  for (let i = 1; i <= amount; i++) {\n    for (const c of coins) {\n      if (i - c >= 0) dp[i] = Math.min(dp[i], 1 + dp[i - c]);\n    }\n  }\n  return dp[amount] === Infinity ? -1 : dp[amount];\n}\nconsole.log(coinChange([1, 2, 5], 11));</code></pre>\n<p><strong>Output</strong></p>\n<p><code>3</code></p>\n<p>dp[i] represents minimum coins needed for amount i. We iterate through every coin denomination in O(amount * coins.length) time.</p>"
+      },
+      {
+        "id": "dsa-climbing-stairs",
+        "q": "How do you solve Climbing Stairs in O(1) space? (LeetCode #70)",
+        "a": "<pre><code>function climbStairs(n) {\n  if (n <= 2) return n;\n  let prev = 1, curr = 2;\n  for (let i = 3; i <= n; i++) {\n    const next = prev + curr;\n    prev = curr;\n    curr = next;\n  }\n  return curr;\n}\nconsole.log(climbStairs(5));</code></pre>\n<p><strong>Output</strong></p>\n<p><code>8</code></p>\n<p>Number of ways to reach step n equals ways to reach (n-1) + ways to reach (n-2) (Fibonacci sequence). O(N) time and O(1) space.</p>"
+      },
+      {
+        "id": "dsa-hackerrank-sherlock",
+        "q": "How do you solve Sherlock and the Valid String? (HackerRank)",
+        "a": "<pre><code>function isValid(s) {\n  const freq = {};\n  for (const ch of s) freq[ch] = (freq[ch] || 0) + 1;\n  const counts = {};\n  for (const f of Object.values(freq)) counts[f] = (counts[f] || 0) + 1;\n  const keys = Object.keys(counts).map(Number);\n  if (keys.length === 1) return \"YES\";\n  if (keys.length === 2) {\n    const [f1, f2] = keys;\n    if ((counts[f1] === 1 && (f1 === 1 || f1 - f2 === 1)) || (counts[f2] === 1 && (f2 === 1 || f2 - f1 === 1))) return \"YES\";\n  }\n  return \"NO\";\n}\nconsole.log(isValid(\"aabbcd\"));</code></pre>\n<p><strong>Output</strong></p>\n<p><code>NO</code></p>\n<p>Count character frequencies, then group frequency occurrences. A string is valid if all characters appear equally, or if removing exactly 1 character makes them equal.</p>"
       }
     ]
   }
