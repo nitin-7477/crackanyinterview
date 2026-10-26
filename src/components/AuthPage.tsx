@@ -3,63 +3,70 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AppHeader } from "./AppHeader";
 import { useAuth } from "../context/AuthContext.jsx";
+import { CAILogo } from "./CAILogo";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  User,
+  ArrowRight,
+  Sparkles,
+  CheckCircle2,
+  Code2,
+  Binary,
+  Layers,
+} from "lucide-react";
 
 const COPY = {
   login: {
     title: "Welcome back",
-    lead: "Log in to continue your preparation",
-    submit: "Log in",
+    lead: "Log in to continue your structured interview preparation",
+    submit: "Sign in to Workspace",
     before: "Don't have an account?",
-    action: "Sign up",
+    action: "Create free account",
     to: "/signup",
   },
   signup: {
     title: "Create your account",
-    lead: "Start your preparation with one account",
-    submit: "Sign up",
+    lead: "Access 665+ high-yield interview questions, roadmaps & mock arena",
+    submit: "Create Account & Start",
     before: "Already have an account?",
-    action: "Log in",
+    action: "Sign in",
     to: "/login",
   },
   forgot: {
     title: "Reset your password",
-    lead: "Choose a new password for your account",
+    lead: "Enter your account email to set a new password",
     submit: "Update password",
-    before: "Remembered it?",
-    action: "Log in",
+    before: "Remembered your credentials?",
+    action: "Sign in",
     to: "/login",
   },
 };
 
-function MailIcon() {
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m4 7 8 6 8-6" /></svg>;
-}
-
-function LockIcon() {
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>;
-}
-
-function EyeIcon({ off }: { off: boolean }) {
-  return off ? (
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18" /><path d="M10.6 10.6A2 2 0 0 0 12 14a2 2 0 0 0 1.4-.6" /><path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c5 0 9.3 3.1 11 7-1 2.2-2.7 4.1-4.8 5.4" /><path d="M6.1 6.1C4.2 7.4 2.7 9.2 2 11c1.2 2.7 3.6 5 6.6 6.2" /></svg>
-  ) : (
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
-  );
-}
-
-export function AuthPage({ mode, initialNotice }: { mode: "login" | "signup" | "forgot"; initialNotice?: string }) {
+export function AuthPage({
+  mode,
+  initialNotice,
+}: {
+  mode: "login" | "signup" | "forgot";
+  initialNotice?: string;
+}) {
   const auth = useAuth();
   const router = useRouter();
   const [notice, setNotice] = useState(initialNotice || "");
   const [tone, setTone] = useState(initialNotice ? "success" : "");
-  const [show, setShow] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const copy = COPY[mode];
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setSubmitting(true);
+    setNotice("");
+
     const data = new FormData(event.currentTarget);
     const payload = {
       name: String(data.get("name") || ""),
@@ -69,7 +76,6 @@ export function AuthPage({ mode, initialNotice }: { mode: "login" | "signup" | "
     };
 
     if (mode === "signup") {
-      // Try backend API first, fallback to context
       try {
         const res = await fetch("/api/auth/signup", {
           method: "POST",
@@ -78,21 +84,22 @@ export function AuthPage({ mode, initialNotice }: { mode: "login" | "signup" | "
         });
         const json = await res.json();
         if (!res.ok) {
-          // If server error or DB not connected, fallback to local auth
           if (res.status === 409 || (res.status === 400 && json.error)) {
             setNotice(json.error);
             setTone("error");
+            setSubmitting(false);
             return;
           }
         }
       } catch {
-        // DB not running or network error: fallback to client-side auth
+        // Fallback to local auth
       }
 
       const result = await auth.signup(payload);
       if (result.error) {
         setNotice(result.error);
         setTone("error");
+        setSubmitting(false);
         return;
       }
       router.push("/login?notice=Account+created.+Log+in+to+continue.");
@@ -104,13 +111,14 @@ export function AuthPage({ mode, initialNotice }: { mode: "login" | "signup" | "
       if (result.error) {
         setNotice(result.error);
         setTone("error");
+        setSubmitting(false);
         return;
       }
       router.push("/login?notice=Password+updated.+Log+in+with+new+password.");
       return;
     }
 
-    // Login mode: try backend API first
+    // Login mode
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
@@ -133,99 +141,228 @@ export function AuthPage({ mode, initialNotice }: { mode: "login" | "signup" | "
     if (result.error) {
       setNotice(result.error);
       setTone("error");
+      setSubmitting(false);
       return;
     }
     router.push("/dashboard");
   }
 
   return (
-    <>
-      <AppHeader modules />
-      <section className="auth-screen">
-        <div className="auth-layout">
-          <div className="auth-copy">
-            <p className="auth-kicker">Interview preparation platform</p>
-            <h1>Prepare smarter.<br />Interview stronger.</h1>
-            <p className="auth-lead">Your next opportunity starts with one focused session.</p>
-            <ul className="auth-points">
-              <li>
-                <span className="auth-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4h9l3 3v13H6z" /><path d="M15 4v3h3" /><path d="M9 12h6M9 16h4" /></svg></span>
-                <span><strong>Structured learning plans</strong>Follow curated plans from basics to advanced</span>
-              </li>
-              <li>
-                <span className="auth-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3h10v18H7z" /><path d="M10 8h4M10 12h4M10 16h2" /></svg></span>
-                <span><strong>Practice quizzes that build confidence</strong>Read, practice and improve step by step</span>
-              </li>
-              <li>
-                <span className="auth-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M13 6l-2 12" /></svg></span>
-                <span><strong>JavaScript, React &amp; React Native</strong>Cover key concepts with real interview questions</span>
-              </li>
-            </ul>
-            <div className="auth-art" aria-hidden="true">
-              <svg viewBox="0 0 460 230">
-                <ellipse cx="250" cy="168" rx="150" ry="46" fill="#e7f6f0" />
-                <rect x="36" y="158" width="34" height="28" rx="4" fill="#f7fbfb" stroke="#d5ebe4" />
-                <path d="M53 158c-1-18 14-34 14-34s1 16-4 24c10-4 16 2 16 12-12 2-20 0-26-2z" fill="#8fd9a8" />
-                <path d="M53 156C51 138 34 128 34 128s4 14 12 20c-8 2-14 8-12 16 8-2 14-4 19-8z" fill="#12b887" />
-                <rect x="118" y="72" width="168" height="102" rx="12" fill="#243040" />
-                <rect x="130" y="84" width="144" height="76" rx="4" fill="#17202b" />
-                <path d="M146 104h46M146 118h78M146 132h36" stroke="#3ddc97" strokeWidth="4" strokeLinecap="round" />
-                <path d="M146 146h58" stroke="#8b7cff" strokeWidth="4" strokeLinecap="round" />
-                <path d="M104 174h198l-16 18H120z" fill="#d7dee8" />
-                <rect x="178" y="192" width="52" height="6" rx="2" fill="#c5ced8" />
-                <rect x="70" y="86" width="54" height="42" rx="12" fill="#fff" stroke="#e4f3ee" />
-                <path d="M84 104l-8 6 8 6M110 104l8 6-8 6M102 98l-6 20" stroke="#12b887" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                <rect x="292" y="42" width="108" height="78" rx="14" fill="#fff" stroke="#e4f3ee" />
-                <circle cx="314" cy="66" r="8" fill="#12b887" />
-                <path d="m310 66 3 3 6-6" stroke="#fff" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-                <path d="M330 66h48" stroke="#d5ebe4" strokeWidth="4" strokeLinecap="round" />
-                <circle cx="314" cy="92" r="8" fill="#12b887" />
-                <path d="m310 92 3 3 6-6" stroke="#fff" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-                <path d="M330 92h36" stroke="#d5ebe4" strokeWidth="4" strokeLinecap="round" />
-                <rect x="318" y="168" width="86" height="12" rx="2" fill="#0c8f69" />
-                <rect x="326" y="156" width="74" height="14" rx="2" fill="#12b887" />
-                <rect x="334" y="146" width="60" height="12" rx="2" fill="#b7ead6" />
-              </svg>
+    <div className="min-h-screen flex flex-col justify-between bg-[var(--bg)] text-[var(--ink)] transition-colors duration-200">
+      {/* Top Simple Header */}
+      <header className="flex h-16 items-center justify-between border-b border-[var(--line)] px-6 lg:px-12 bg-[var(--surface)]/60 backdrop-blur-md">
+        <CAILogo href="/login" />
+        <Link
+          href={copy.to}
+          className="text-xs font-medium text-zinc-400 hover:text-white transition"
+        >
+          {copy.before} <span className="text-zinc-200 underline font-semibold ml-1">{copy.action}</span>
+        </Link>
+      </header>
+
+      {/* Main Form Centerpiece */}
+      <main className="flex-1 flex items-center justify-center p-4 sm:p-8">
+        <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+          {/* Left Column: Platform Value Props */}
+          <div className="hidden lg:flex flex-col space-y-6 pr-4">
+            <div className="inline-flex items-center gap-2 rounded-full border border-zinc-700/60 bg-zinc-800/40 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-300 w-fit">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>SDE Preparation Platform</span>
+            </div>
+
+            <div className="space-y-2">
+              <h1 className="text-3xl font-extrabold tracking-tight text-[var(--ink)] leading-tight">
+                Prepare Smarter.<br />
+                Interview Stronger.
+              </h1>
+              <p className="text-sm text-[var(--ink-secondary)] leading-relaxed">
+                Structured 10-day roadmaps, deep-dive JavaScript execution engine questions, and timed mock arenas designed for top tech interviews.
+              </p>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <div className="flex items-start gap-3 rounded-xl border border-[var(--line)] bg-[var(--surface)] p-3.5">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-200">
+                  <Code2 className="h-4 w-4" />
+                </div>
+                <div>
+                  <h2 className="text-xs font-bold text-[var(--ink)]">Curated 10-Day Roadmaps</h2>
+                  <p className="text-[11px] text-[var(--ink-secondary)] mt-0.5">
+                    Step-by-step mastery covering JavaScript Core, React 19, and React Native mobile architecture.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 rounded-xl border border-[var(--line)] bg-[var(--surface)] p-3.5">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-200">
+                  <Binary className="h-4 w-4" />
+                </div>
+                <div>
+                  <h2 className="text-xs font-bold text-[var(--ink)]">Tricky Code Output Challenges</h2>
+                  <p className="text-[11px] text-[var(--ink-secondary)] mt-0.5">
+                    50 high-frequency traps: closures, prototype chains, microtask order, and coercion drills.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 rounded-xl border border-[var(--line)] bg-[var(--surface)] p-3.5">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-200">
+                  <Layers className="h-4 w-4" />
+                </div>
+                <div>
+                  <h2 className="text-xs font-bold text-[var(--ink)]">Revision Vault & Mock Arena</h2>
+                  <p className="text-[11px] text-[var(--ink-secondary)] mt-0.5">
+                    Bookmark tricky questions into your revision vault and practice under timed interview conditions.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
-          <form className="auth-card" onSubmit={onSubmit}>
-            <h2>{copy.title}</h2>
-            <p className="auth-sub">{copy.lead}</p>
-            {notice ? <p className={tone === "error" ? "auth-error" : "auth-success"}>{notice}</p> : null}
-            {mode === "signup" ? (
-              <label className="auth-field">Name
-                <span className="auth-input"><input name="name" placeholder="Your name" required autoComplete="name" /></span>
-              </label>
-            ) : null}
-            <label className="auth-field">Email address
-              <span className="auth-input">
-                <MailIcon />
-                <input name="email" type="email" placeholder="you@example.com" required autoComplete="email" />
-              </span>
-            </label>
-            <label className="auth-field">Password
-              <span className="auth-input">
-                <LockIcon />
-                <input name="password" type={show ? "text" : "password"} placeholder="Enter your password" required minLength={6} autoComplete={mode === "login" ? "current-password" : "new-password"} />
-                <button type="button" className="auth-eye" onClick={() => setShow((value) => !value)} aria-label={show ? "Hide password" : "Show password"}>
-                  <EyeIcon off={show} />
-                </button>
-              </span>
-            </label>
-            {mode !== "login" ? (
-              <label className="auth-field">Confirm password
-                <span className="auth-input">
-                  <LockIcon />
-                  <input name="confirm" type={show ? "text" : "password"} placeholder="Confirm your password" required minLength={6} />
-                </span>
-              </label>
-            ) : null}
-            {mode === "login" ? <div className="auth-row"><Link href="/forgot">Forgot password?</Link></div> : null}
-            <button className="auth-submit" type="submit">{copy.submit}</button>
-            <p className="auth-switch">{copy.before} <Link href={copy.to}>{copy.action}</Link></p>
-          </form>
+
+          {/* Right Column: Stealth Auth Card */}
+          <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6 sm:p-8 shadow-2xl space-y-6">
+            <div className="space-y-1">
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--ink)]">
+                {copy.title}
+              </h2>
+              <p className="text-xs text-[var(--ink-secondary)]">
+                {copy.lead}
+              </p>
+            </div>
+
+            {notice && (
+              <div
+                className={`rounded-xl border p-3 text-xs ${
+                  tone === "error"
+                    ? "border-rose-800/80 bg-rose-950/40 text-rose-300"
+                    : "border-zinc-700 bg-zinc-800/80 text-zinc-200"
+                }`}
+              >
+                {notice}
+              </div>
+            )}
+
+            <form onSubmit={onSubmit} className="space-y-4">
+              {mode === "signup" && (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-zinc-300">
+                    Full Name
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500" />
+                    <input
+                      name="name"
+                      type="text"
+                      placeholder="Bittu Kumar"
+                      required
+                      autoComplete="name"
+                      className="w-full rounded-xl border border-[var(--line)] bg-[var(--paper)] py-2 pl-9 pr-3 text-xs text-[var(--ink)] placeholder-zinc-500 focus:border-zinc-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-zinc-300">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500" />
+                  <input
+                    name="email"
+                    type="email"
+                    placeholder="you@company.com"
+                    required
+                    autoComplete="email"
+                    className="w-full rounded-xl border border-[var(--line)] bg-[var(--paper)] py-2 pl-9 pr-3 text-xs text-[var(--ink)] placeholder-zinc-500 focus:border-zinc-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-medium text-zinc-300">
+                    Password
+                  </label>
+                  {mode === "login" && (
+                    <Link
+                      href="/forgot"
+                      className="text-[11px] text-zinc-400 hover:text-zinc-200 transition"
+                    >
+                      Forgot password?
+                    </Link>
+                  )}
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500" />
+                  <input
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter password (min 6 characters)"
+                    required
+                    minLength={6}
+                    autoComplete={mode === "login" ? "current-password" : "new-password"}
+                    className="w-full rounded-xl border border-[var(--line)] bg-[var(--paper)] py-2 pl-9 pr-10 text-xs text-[var(--ink)] placeholder-zinc-500 focus:border-zinc-500 focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 p-0.5"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  </button>
+                </div>
+              </div>
+
+              {mode !== "login" && (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-zinc-300">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500" />
+                    <input
+                      name="confirm"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Re-enter your password"
+                      required
+                      minLength={6}
+                      className="w-full rounded-xl border border-[var(--line)] bg-[var(--paper)] py-2 pl-9 pr-3 text-xs text-[var(--ink)] placeholder-zinc-500 focus:border-zinc-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full flex items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-semibold py-2.5 px-4 text-xs transition active:scale-95 shadow-sm disabled:opacity-50"
+              >
+                <span>{submitting ? "Processing..." : copy.submit}</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+            </form>
+
+            <div className="text-center pt-2">
+              <p className="text-xs text-zinc-400">
+                {copy.before}{" "}
+                <Link
+                  href={copy.to}
+                  className="font-semibold text-zinc-200 hover:text-white underline transition ml-1"
+                >
+                  {copy.action}
+                </Link>
+              </p>
+            </div>
+          </div>
         </div>
-      </section>
-    </>
+      </main>
+
+      {/* Footer */}
+      <footer className="py-4 text-center text-[11px] text-zinc-500 border-t border-[var(--line)]">
+        CrackAnyInterview · Free & Open Interview Preparation Platform · Monochrome Stealth Edition
+      </footer>
+    </div>
   );
 }
